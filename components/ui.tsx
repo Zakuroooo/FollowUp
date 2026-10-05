@@ -1,37 +1,63 @@
 import Link from "next/link";
-import { STAGE_SHORT } from "@/lib/stages";
+import { STAGE_LABEL } from "@/lib/stages";
 import type { Stage } from "@/lib/types";
+
+/** The mark: a call-back arrow looping round, with a "new" dot. */
+export function LogoMark({ size = 28, dark = true }: { size?: number; dark?: boolean }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" rx="8" fill={dark ? "#0b0d12" : "#ffffff"} />
+      <path d="M20.13 10.30A7.2 7.2 0 1 1 11.87 10.30" fill="none" stroke={dark ? "#fff" : "#0b0d12"} strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M8.59 9.49L12.36 9.96L11.51 13.66" fill="none" stroke={dark ? "#fff" : "#0b0d12"} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 export function Logo({ light = false }: { light?: boolean }) {
   return (
-    <span className={`display text-[22px] font-extrabold ${light ? "text-frost" : "text-ink"}`}>
-      Follow<span className={light ? "text-[#f2a88b]" : "text-alert"}>Up</span>
+    <span className="inline-flex items-center gap-2.5">
+      <LogoMark dark={!light} />
+      <span className={`text-[17px] font-bold tracking-[-0.02em] ${light ? "text-white" : "text-ink"}`}>FollowUp</span>
     </span>
   );
 }
 
 const STAGE_TONE: Record<Stage, string> = {
-  new: "bg-alert-bg text-alert-ink",
-  quote: "bg-frost-2 text-teal",
-  awaiting_yes: "bg-frost-2 text-teal",
-  scheduled: "bg-ok-bg text-ok",
-  done: "bg-ok-bg text-ok",
-  lost: "bg-line-2 text-muted",
+  new: "bg-urgent-soft text-urgent-ink",
+  quote: "bg-warn-soft text-warn",
+  awaiting_yes: "bg-brand-soft text-brand",
+  scheduled: "bg-ok-soft text-ok",
+  done: "bg-subtle text-ink-2",
+  lost: "bg-subtle text-muted",
+};
+const STAGE_DOT: Record<Stage, string> = {
+  new: "bg-urgent", quote: "bg-warn", awaiting_yes: "bg-brand", scheduled: "bg-ok", done: "bg-ink-2", lost: "bg-muted",
 };
 
 export function StageBadge({ stage }: { stage: Stage }) {
   return (
-    <span className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${STAGE_TONE[stage]}`}>
-      {stage === "awaiting_yes" ? "Waiting on their yes" : stage === "quote" ? "Waiting on quote" : STAGE_SHORT[stage]}
+    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${STAGE_TONE[stage]}`}>
+      <span className={`size-1.5 rounded-full ${STAGE_DOT[stage]}`} />
+      {STAGE_LABEL[stage].replace(" — needs a call", "")}
+    </span>
+  );
+}
+
+export function Avatar({ name, hot = false }: { name: string; hot?: boolean }) {
+  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("");
+  return (
+    <span aria-hidden="true"
+      className={`grid size-9 shrink-0 place-items-center rounded-full text-[13px] font-semibold ${hot ? "bg-urgent-soft text-urgent-ink" : "bg-brand-soft text-brand"}`}>
+      {initials || "?"}
     </span>
   );
 }
 
 export const money = (n: number) => `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 
-export function PhoneIcon({ className = "" }: { className?: string }) {
+export function PhoneIcon({ className = "", size = 16 }: { className?: string; size?: number }) {
   return (
-    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />
     </svg>
   );
@@ -39,9 +65,22 @@ export function PhoneIcon({ className = "" }: { className?: string }) {
 
 export function BackLink({ href, label }: { href: string; label: string }) {
   return (
-    <Link href={href} className="inline-flex min-h-11 items-center gap-1.5 font-medium text-ink-2 hover:text-ink">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+    <Link href={href} className="inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-muted hover:text-ink">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
       {label}
     </Link>
+  );
+}
+
+export function PageHeader({ eyebrow, title, sub, children }: { eyebrow?: string; title: string; sub?: string; children?: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        {eyebrow && <p className="text-[13px] text-muted">{eyebrow}</p>}
+        <h1 className="display mt-1 text-[28px] leading-tight md:text-[32px]">{title}</h1>
+        {sub && <p className="mt-1 text-ink-2">{sub}</p>}
+      </div>
+      {children && <div className="flex flex-wrap gap-2">{children}</div>}
+    </div>
   );
 }

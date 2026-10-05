@@ -42,10 +42,10 @@ export function AddJobForm() {
         <div className="flex flex-wrap gap-2">
           {[
             ["auto", "Decide from the problem"],
-            ["yes", "Yes — equipment down"],
+            ["yes", "Yes, equipment is down"],
             ["no", "No"],
           ].map(([v, l]) => (
-            <label key={v} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-[10px] border border-line bg-card px-3 has-[:checked]:border-ink has-[:checked]:bg-frost">
+            <label key={v} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-line bg-card px-3 has-[:checked]:border-ink has-[:checked]:bg-subtle">
               <input type="radio" name="urgent" value={v} defaultChecked={v === "auto"} className="accent-[var(--ink)]" />
               <span className="text-sm font-medium">{l}</span>
             </label>
@@ -54,15 +54,15 @@ export function AddJobForm() {
       </fieldset>
 
       {state.duplicateOf && (
-        <div role="alert" className="rounded-xl border border-alert-line bg-alert-bg p-4 text-sm text-alert-ink md:col-span-2">
+        <div role="alert" className="rounded-lg border border-urgent-line bg-urgent-soft p-4 text-sm text-urgent-ink md:col-span-2">
           <b>{state.duplicateOf.name}</b> already has an open job with this phone number.{" "}
           <Link href={`/app/jobs/${state.duplicateOf.id}`} className="font-semibold underline">Open that job</Link>, or add this one anyway.
           <input type="hidden" name="confirm_duplicate" value="1" />
         </div>
       )}
-      {state.error && <p role="alert" className="text-sm font-semibold text-alert-ink md:col-span-2">{state.error}</p>}
+      {state.error && <p role="alert" className="text-sm font-semibold text-urgent-ink md:col-span-2">{state.error}</p>}
 
-      <div className="flex justify-end gap-2 md:col-span-2">
+      <div className="flex justify-end gap-2 border-t border-line-2 pt-4 md:col-span-2">
         <Link href="/app" className="btn-line">Cancel</Link>
         <button disabled={pending} className="btn-ink">{pending ? "Saving…" : state.duplicateOf ? "Add anyway" : "Save job"}</button>
       </div>

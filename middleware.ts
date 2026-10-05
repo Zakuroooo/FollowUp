@@ -9,6 +9,15 @@ import { createServerClient } from "@supabase/ssr";
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  // Database not connected yet (e.g. a fresh deploy): show the login page's notice instead of crashing.
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    if (!request.nextUrl.pathname.startsWith("/app")) return response;
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = "?error=demo_unavailable";
+    return NextResponse.redirect(url);
+  }
+
   const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
     cookies: {
       getAll: () => request.cookies.getAll(),

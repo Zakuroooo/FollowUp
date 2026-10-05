@@ -41,6 +41,7 @@ export async function signUp(_prev: AuthState, form: FormData): Promise<AuthStat
 
 /** One click → a private sandbox account with a realistic week of jobs. */
 export async function tryDemo() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) redirect("/login?error=demo_unavailable");
   const supabase = await db();
   const { error } = await supabase.auth.signInAnonymously();
   if (error) redirect("/login?error=demo_unavailable");

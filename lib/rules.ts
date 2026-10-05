@@ -17,11 +17,11 @@ export interface CallItem {
   overdue: boolean;
 }
 
-/** The order the blocks appear on the Today screen. */
+/** The order the blocks appear on the call list. */
 export const BUCKETS: { key: Bucket; title: string; hint: string }[] = [
-  { key: "emergency", title: "Emergency · call now", hint: "Equipment down — these go to competitors first" },
-  { key: "new", title: "New requests · call back", hint: "Nobody has called them back yet" },
-  { key: "reminder", title: "Reminders for today", hint: "Follow-up dates you set" },
+  { key: "emergency", title: "Emergencies", hint: "Equipment down — these go to competitors first" },
+  { key: "new", title: "New requests", hint: "Nobody has called them back yet" },
+  { key: "reminder", title: "Reminders", hint: "Follow-up dates you set" },
   { key: "quote", title: "Quotes to send", hint: "They are waiting on your price" },
   { key: "follow_up", title: "Follow-ups due", hint: "Quote sent, no answer in 2+ days" },
   { key: "schedule", title: "Ready to schedule", hint: "They said yes — pick a date" },
@@ -65,7 +65,7 @@ export function classify(job: Job, now: Date, today: string): CallItem | null {
 
   // A reminder date she set herself overrides every other rule.
   if (job.follow_up_on && job.follow_up_on <= today) {
-    return { job, bucket: "reminder", reason: `Reminder set for ${job.follow_up_on}`, action: "Call", overdue: job.follow_up_on < today };
+    return { job, bucket: "reminder", reason: `Reminder for ${job.follow_up_on}`, action: "Call", overdue: job.follow_up_on < today };
   }
 
   const lastTouch = job.last_contact_at ?? job.stage_changed_at;
@@ -73,12 +73,12 @@ export function classify(job: Job, now: Date, today: string): CallItem | null {
   switch (job.stage) {
     case "new": // "a restaurant called on a Friday, freezer down, and I forgot to follow up"
       return job.urgent
-        ? { job, bucket: "emergency", reason: `Emergency${job.urgency_reason ? ` (${job.urgency_reason})` : ""} · ${ago(job.created_at, now)}`, action: "Call now", overdue: true }
-        : { job, bucket: "new", reason: `New request · ${ago(job.created_at, now)}`, action: "Call back", overdue: now.getTime() - new Date(job.created_at).getTime() > DAY };
+        ? { job, bucket: "emergency", reason: `Came in ${ago(job.created_at, now)}`, action: "Call now", overdue: true }
+        : { job, bucket: "new", reason: `Came in ${ago(job.created_at, now)}`, action: "Call back", overdue: now.getTime() - new Date(job.created_at).getTime() > DAY };
 
     case "quote": { // "these three people are waiting on a quote"
       const late = now.getTime() - new Date(job.stage_changed_at).getTime() > QUOTE_DUE_HOURS * HOUR;
-      return { job, bucket: "quote", reason: `Asked ${ago(job.stage_changed_at, now)}${late ? " · overdue" : ""}`, action: "Send quote", overdue: late };
+      return { job, bucket: "quote", reason: `Asked ${ago(job.stage_changed_at, now)}`, action: "Send quote", overdue: late };
     }
 
     case "awaiting_yes": { // "this one has not heard from us in two days"
@@ -101,7 +101,7 @@ export function classify(job: Job, now: Date, today: string): CallItem | null {
   return null;
 }
 
-/** The full Today list, grouped into blocks, oldest first inside each block. */
+/** The full call list, grouped into blocks, oldest first inside each block. */
 export function callList(jobs: Job[], now: Date, today: string) {
   const items = jobs.map((j) => classify(j, now, today)).filter((x): x is CallItem => x !== null);
   const groups = BUCKETS.map((b) => ({

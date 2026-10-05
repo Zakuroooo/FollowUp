@@ -1,67 +1,75 @@
 @import "tailwindcss";
 
-/* ── "Cold Room" design tokens ─────────────────────────────────────────────
-   Frost ground, deep cold-teal ink, one warm alert colour (urgent / call).
-   Swapping a theme = changing these values only. */
+/* ── FollowUp design tokens ────────────────────────────────────────────────
+   Calm graphite on near-white, one cold "glacier" blue for the brand,
+   red reserved for emergencies, amber for "overdue". */
 :root {
-  --frost: #eef2f0;
-  --frost-2: #e1e9e6;
+  --canvas: #f7f8fa;
+  --subtle: #f1f3f6;
   --card: #ffffff;
-  --ink: #0d2b2f;
-  --ink-2: #2f4446;
-  --muted: #56696b;
-  --line: #d3ddd9;
-  --line-2: #e4ebe8;
-  --teal: #0f5257;
-  --alert: #d9552b;
-  --alert-ink: #a63a16;
-  --alert-bg: #fbede6;
-  --alert-line: #f2c4ae;
-  --ok: #2f7d4e;
-  --ok-bg: #e5f2ea;
+  --ink: #0b0d12;
+  --ink-2: #3b4250;
+  --muted: #6e7687;
+  --line: #e6e8ee;
+  --line-2: #eef0f4;
+  --brand: #2557e8;
+  --brand-soft: #eef2fe;
+  --urgent: #e5484d;
+  --urgent-ink: #c2262e;
+  --urgent-soft: #fef0f0;
+  --urgent-line: #f8d7d8;
+  --warn: #a15c00;
+  --warn-soft: #fff6e5;
+  --ok: #1d7a4b;
+  --ok-soft: #eaf6ef;
 }
 
 @theme inline {
-  --color-frost: var(--frost);
-  --color-frost-2: var(--frost-2);
+  --color-canvas: var(--canvas);
+  --color-subtle: var(--subtle);
   --color-card: var(--card);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-line-2: var(--line-2);
-  --color-teal: var(--teal);
-  --color-alert: var(--alert);
-  --color-alert-ink: var(--alert-ink);
-  --color-alert-bg: var(--alert-bg);
-  --color-alert-line: var(--alert-line);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-urgent: var(--urgent);
+  --color-urgent-ink: var(--urgent-ink);
+  --color-urgent-soft: var(--urgent-soft);
+  --color-urgent-line: var(--urgent-line);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
   --color-ok: var(--ok);
-  --color-ok-bg: var(--ok-bg);
-  --font-display: var(--font-bricolage), ui-sans-serif, sans-serif;
-  --font-sans: var(--font-figtree), ui-sans-serif, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --color-ok-soft: var(--ok-soft);
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
   html { -webkit-text-size-adjust: 100%; }
   body {
-    background: var(--frost);
+    background: var(--canvas);
     color: var(--ink);
-    font-family: var(--font-figtree), ui-sans-serif, sans-serif;
+    font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
   a { color: inherit; }
-  :focus-visible { outline: 2.5px solid var(--teal); outline-offset: 2px; border-radius: 6px; }
+  ::selection { background: var(--brand-soft); }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
 }
 
-@utility btn { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] px-4 text-[15px] font-semibold transition-colors disabled:opacity-50; }
-@utility btn-ink { @apply btn bg-ink text-frost hover:bg-ink-2; }
-@utility btn-teal { @apply btn bg-teal text-white hover:bg-ink; }
-@utility btn-alert { @apply btn bg-alert text-white hover:bg-alert-ink; }
-@utility btn-line { @apply btn border-[1.5px] border-ink bg-card text-ink hover:bg-frost; }
-@utility btn-sm { @apply min-h-10 px-3 text-sm; }
-@utility card { @apply rounded-2xl border border-line bg-card; }
-@utility field { @apply min-h-11 w-full rounded-[10px] border border-line bg-[#f5f8f7] px-3 text-base text-ink placeholder:text-muted focus:border-teal focus:bg-card focus:outline-none; }
-@utility label { @apply mb-1.5 block text-[13px] font-semibold text-ink-2; }
-@utility eyebrow { @apply font-mono text-[11px] uppercase tracking-[0.08em] text-muted; }
-@utility display { @apply font-display font-bold tracking-[-0.02em]; }
+@utility btn { @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors disabled:opacity-50; }
+@utility btn-ink { @apply btn bg-ink text-white hover:bg-[#262a33]; }
+@utility btn-brand { @apply btn bg-brand text-white hover:bg-[#1d47c2]; }
+@utility btn-urgent { @apply btn bg-urgent font-semibold text-white hover:bg-urgent-ink; }
+@utility btn-line { @apply btn border border-line bg-card text-ink hover:bg-subtle; }
+@utility btn-sm { @apply min-h-9 px-3 text-[13px]; }
+@utility btn-lg { @apply min-h-12 px-5 text-[15px]; }
+@utility card { @apply rounded-xl border border-line bg-card; }
+@utility field { @apply min-h-10 w-full rounded-lg border border-line bg-card px-3 text-[15px] text-ink placeholder:text-muted focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand-soft; }
+@utility label { @apply mb-1.5 block text-[13px] font-medium text-ink-2; }
+@utility eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-muted; }
+@utility display { @apply font-display font-bold tracking-[-0.03em]; }

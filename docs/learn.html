@@ -1,393 +1,104 @@
 <title>FollowUp Field Guide</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: one reading column with a sticky chapter rail on wide screens. Same "Cold Room" tokens as the app. */
-:root {
-  --bg: #eef2f0; --surface: #ffffff; --ink: #0d2b2f; --ink-2: #2f4446; --muted: #56696b;
-  --line: #d3ddd9; --teal: #0f5257; --alert: #d9552b; --alert-ink: #a63a16; --alert-bg: #fbede6;
-  --ok: #2f7d4e; --ok-bg: #e5f2ea; --code-bg: #e1e9e6;
-  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
-  --body: "Figtree", "Segoe UI", system-ui, sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-}
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #0b1b1d; --surface: #12282b; --ink: #e6efec; --ink-2: #c3d2ce; --muted: #8fa5a2;
-  --line: #24403f; --teal: #5fb3b0; --alert: #f08a62; --alert-ink: #f6a888; --alert-bg: #2b1a14;
-  --ok: #6fcf97; --ok-bg: #12291d; --code-bg: #183336; color-scheme: dark } }
-:root[data-theme="dark"] {
-  --bg: #0b1b1d; --surface: #12282b; --ink: #e6efec; --ink-2: #c3d2ce; --muted: #8fa5a2;
-  --line: #24403f; --teal: #5fb3b0; --alert: #f08a62; --alert-ink: #f6a888; --alert-bg: #2b1a14;
-  --ok: #6fcf97; --ok-bg: #12291d; --code-bg: #183336; color-scheme: dark }
-
-* { box-sizing: border-box; }
-body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.6; }
-.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; display: grid; gap: 40px; grid-template-columns: 1fr; }
-@media (min-width: 980px) { .wrap { grid-template-columns: 220px minmax(0, 1fr); } }
-nav.rail { display: none; }
-@media (min-width: 980px) { nav.rail { display: block; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; } }
-nav.rail a { display: block; padding: 6px 10px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 14px; }
-nav.rail a:hover { background: var(--surface); color: var(--ink); }
-main { min-width: 0; display: flex; flex-direction: column; gap: 56px; }
-h1, h2, h3 { font-family: var(--display); letter-spacing: -0.02em; text-wrap: balance; margin: 0; }
-h1 { font-size: clamp(38px, 6vw, 60px); line-height: 1; font-weight: 800; }
-h2 { font-size: clamp(28px, 4vw, 36px); line-height: 1.1; font-weight: 700; }
-h3 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
-p { margin: 0; max-width: 68ch; }
-.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-section { display: flex; flex-direction: column; gap: 16px; }
-.lead { font-size: 20px; color: var(--ink-2); }
-.hinglish { border-left: 3px solid var(--teal); padding: 6px 0 6px 14px; color: var(--ink-2); font-style: italic; }
-.hinglish b { font-style: normal; color: var(--teal); }
-.box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
-.box.hot { background: var(--alert-bg); border-color: transparent; }
-.grid2 { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-.grid2 > * { min-width: 0; }
-code, .mono { font-family: var(--mono); font-size: 0.86em; }
-code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; }
-.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; overflow-x: auto; }
-.diagram pre.mermaid { margin: 0; background: transparent; }
-.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
-table { width: 100%; border-collapse: collapse; font-size: 15px; }
-th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
-tr:last-child td { border-bottom: 0; }
-details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; }
-details + details { margin-top: 8px; }
-summary { cursor: pointer; font-weight: 600; }
-details p { margin-top: 8px; color: var(--ink-2); }
-.tag { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--code-bg); color: var(--teal); }
-.tag.hot { background: var(--alert-bg); color: var(--alert-ink); }
-ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; max-width: 68ch; }
-a { color: var(--teal); }
-:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 4px; }
+:root{--bg:#f7f8fa;--card:#fff;--ink:#0b0d12;--ink2:#3b4250;--muted:#6e7687;--line:#e6e8ee;--subtle:#f1f3f6;--brand:#2557e8;--brand-soft:#eef2fe;--urgent:#c2262e;--urgent-soft:#fef0f0;--warn:#a15c00;--ok:#1d7a4b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0d12;--card:#14171e;--ink:#eef0f4;--ink2:#b8bfcc;--muted:#8a93a5;--line:#262b35;--subtle:#1b1f27;--brand:#7c9bff;--brand-soft:#1a2340;--urgent:#ff7b80;--urgent-soft:#2a1416;--warn:#f0b35a;--ok:#5fd39a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0b0d12;--card:#14171e;--ink:#eef0f4;--ink2:#b8bfcc;--muted:#8a93a5;--line:#262b35;--subtle:#1b1f27;--brand:#7c9bff;--brand-soft:#1a2340;--urgent:#ff7b80;--urgent-soft:#2a1416;--warn:#f0b35a;--ok:#5fd39a;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.65 Geist,ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-inline:16px;padding-block:40px 80px}
+.wrap{max-width:720px;margin:0 auto}
+.top{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.02em}
+.mark{width:28px;height:28px;border-radius:8px;background:var(--ink);display:grid;place-items:center}
+h1{font-size:clamp(32px,6vw,44px);line-height:1.05;letter-spacing:-.03em;margin:28px 0 8px;text-wrap:balance}
+.lede{color:var(--ink2);font-size:18px;margin:0}
+.meta{color:var(--muted);font-size:13px;margin-top:10px}
+h2{font-size:22px;letter-spacing:-.02em;margin:52px 0 10px;display:flex;gap:10px;align-items:baseline}
+h2 .n{font:500 13px "Geist Mono",ui-monospace,monospace;color:var(--muted)}
+p{margin:10px 0;color:var(--ink2)} b,strong{color:var(--ink)}
+.hl{border-left:3px solid var(--brand);background:var(--brand-soft);padding:12px 16px;border-radius:0 10px 10px 0;color:var(--ink);margin:16px 0}
+.hl.red{border-color:var(--urgent);background:var(--urgent-soft)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:16px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:500;color:var(--muted);background:var(--subtle);font-size:12px}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600;color:var(--ink);white-space:nowrap}
+.tw{overflow-x:auto}
+code{font:13px "Geist Mono",ui-monospace,monospace;background:var(--subtle);border:1px solid var(--line);padding:1px 6px;border-radius:5px;color:var(--ink)}
+.mermaid{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto}
+ol.q{padding-left:20px} ol.q li{margin:8px 0;color:var(--ink2)} ol.q li b{display:block}
+.hi{color:var(--muted);font-style:italic}
 </style>
 
 <div class="wrap">
-<nav class="rail" aria-label="Chapters">
-  <p class="eyebrow" style="padding: 0 10px 8px">Chapters</p>
-  <a href="#problem">1 · The problem</a>
-  <a href="#built">2 · What we built</a>
-  <a href="#architecture">3 · Architecture</a>
-  <a href="#flows">4 · How requests flow</a>
-  <a href="#database">5 · The database</a>
-  <a href="#rules">6 · The call-today brain</a>
-  <a href="#urgency">7 · Urgency rules</a>
-  <a href="#edges">8 · Edge cases</a>
-  <a href="#files">9 · File map</a>
-  <a href="#why">10 · Why these tools</a>
-  <a href="#claude">11 · How we used Claude Code</a>
-  <a href="#interview">12 · Interview questions</a>
-</nav>
+  <div class="top"><span class="mark"><svg width="18" height="18" viewBox="0 0 32 32"><path d="M20.13 10.30A7.2 7.2 0 1 1 11.87 10.30" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/><path d="M8.59 9.49L12.36 9.96L11.51 13.66" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>FollowUp</div>
+  <h1>Field guide — the whole app in 10 minutes</h1>
+  <p class="lede">What we built for Denise, how it works, and the questions Gushwork will ask you. Read it twice, then explain it out loud without looking.</p>
+  <p class="meta">Live: followup-indol-seven.vercel.app · Code: ~/Desktop/followup</p>
 
-<main>
-<header style="display:flex;flex-direction:column;gap:14px">
-  <p class="eyebrow">Learning guide · Gushwork FDE assignment</p>
-  <h1>FollowUp, explained from zero</h1>
-  <p class="lead">Read this top to bottom once. Every chapter has a simple English explanation, a diagram, and a Hinglish line in the green-edged box for the hard parts. By the end you should be able to explain every screen, every table and every decision.</p>
-</header>
+  <h2><span class="n">01</span>The problem, in one line</h2>
+  <p>Denise runs a refrigeration repair shop. Requests come from <b>5 places</b> (calls, texts, web form, referrals, a notebook). She forgot one follow-up and lost a <b>$2,000</b> job.</p>
+  <div class="hl">Her exact ask: <b>“wake up and know who I need to call today.”</b> So the main screen is the <b>Call list</b>, not a dashboard.</div>
+  <p class="hi">Simple words: problem “data store karna” nahi hai — problem “yaad dilana” hai. App ka kaam hai roz subah batana: kisko call karna hai, aur kyun.</p>
 
-<section id="problem">
-  <p class="eyebrow">Chapter 1</p>
-  <h2>The problem we are solving</h2>
-  <p>Denise owns a small US company that repairs commercial fridges, freezers and ice machines. She has 4 technicians and gets about 15–20 new requests a week.</p>
-  <div class="box hot"><p><b>The problem in one line:</b> she has enough work, but she <b>loses jobs she already has</b>, because requests come in from 5 places and nothing reminds her who is waiting on her.</p></div>
-  <div class="diagram"><pre class="mermaid">
+  <h2><span class="n">02</span>What the app does (Version 1)</h2>
+  <div class="box tw"><table>
+    <tr><th>Page</th><th>What it does</th></tr>
+    <tr><td>Call list</td><td>Who to call today, and why. Emergencies on top. Each row shows the reason (“$2,400 quote · quiet 4 days”). This was called “Today” before — renamed because the word didn’t say what the page does.</td></tr>
+    <tr><td>All jobs</td><td>Every job with its stage: New → Quote → Their yes → Scheduled → Done (or Lost). Filter chips + search.</td></tr>
+    <tr><td>Add a job</td><td>15-second form. Words like “freezer down” auto-flag an emergency. Same phone twice → warning.</td></tr>
+    <tr><td>Job page</td><td>Call/text button, one-tap “next step”, log a call, set a reminder, full history.</td></tr>
+    <tr><td>Guest demo</td><td>One click → a private sandbox with 12 realistic jobs. No signup.</td></tr>
+  </table></div>
+
+  <h2><span class="n">03</span>Architecture — the map</h2>
+  <pre class="mermaid">
 flowchart LR
-  A["Phone call"] --> X{{"Denise's memory<br/>+ notebook"}}
-  B["Website form → email"] --> X
-  C["Text message"] --> X
-  D["Referral"] --> X
-  E["Repeat customer"] --> X
-  X -->|"busy Friday"| F["Forgot to call back"]
-  F --> G["$2,000 job lost to a competitor"]
-  </pre></div>
-  <p class="hinglish"><b>Hinglish mein:</b> kaam ki kami nahi hai — kaam haath se phisal raha hai. Request 5 jagah se aati hai, yaad dilane wala koi nahi.</p>
-  <p>She told us exactly what she wants: <i>"one screen — who to call today, and where each job is. Waiting on quote, waiting on their yes, scheduled, done. I don't need anything fancy."</i> That sentence is our specification.</p>
-</section>
+  B[Browser] -->|page request| M[Middleware<br/>checks login]
+  M --> P[Next.js page<br/>Server Component]
+  P -->|reads jobs| S[(Supabase Postgres<br/>RLS on)]
+  P --> R[lib/rules.ts<br/>who to call today]
+  B -->|form submit| A[Server Action<br/>zod validates]
+  A -->|insert / update| S
+  A -->|writes| E[(job_events<br/>history)]
+  </pre>
+  <p><b>Next.js</b> renders pages on the server. <b>Server Actions</b> handle form submits (no separate API needed). <b>Supabase</b> gives Postgres + login. <b>RLS</b> (Row-Level Security) means the database itself only returns <i>your</i> rows — <code>owner_id = auth.uid()</code>.</p>
+  <p class="hi">RLS kyun? Agar code mein bug ho aur filter bhool jao, tab bhi database doosre user ka data nahi dega. Security code pe nahi, database pe tiki hai.</p>
 
-<section id="built">
-  <p class="eyebrow">Chapter 2</p>
-  <h2>What we built (Version 1)</h2>
-  <div class="grid2">
-    <div class="box"><h3>Landing page</h3><p>Explains the product and has a <b>Try the demo</b> button that signs you into a private demo account in one click.</p></div>
-    <div class="box"><h3>Today</h3><p>Her "one screen". Separate blocks: Emergency, New requests, Quotes to send, Follow-ups due, Ready to schedule. Plus the numbers her husband wants.</p></div>
-    <div class="box"><h3>Jobs</h3><p>"Where every job is" — a board by stage on desktop, stage tabs on the phone, with search.</p></div>
-    <div class="box"><h3>Add job</h3><p>A 15-second form for calls, texts and notebook items. Detects urgency and warns if the same phone already has an open job.</p></div>
-    <div class="box"><h3>One job</h3><p>Call and text buttons, the next step in one tap, reminders, undo, and the full history — which answers "did I send the quote?"</p></div>
-    <div class="box"><h3>Log in / Sign up</h3><p>Real accounts. Each account sees only its own jobs — the database enforces it.</p></div>
-  </div>
-</section>
-
-<section id="architecture">
-  <p class="eyebrow">Chapter 3</p>
-  <h2>Architecture: the map</h2>
-  <p>Think of the app as four layers. The phone shows pages. The server runs our logic. Supabase stores the data and handles logins. In Version 2, the server also talks to AI (Groq) and email (Resend).</p>
-  <div class="diagram"><pre class="mermaid">
-flowchart TB
-  subgraph Browser["Browser / phone"]
-    P["Pages: Landing · Today · Jobs · Add · One job"]
-  end
-  subgraph Server["Next.js server (Vercel)"]
-    MW["middleware.ts<br/>refresh login · guard /app"]
-    SA["Server Actions<br/>lib/actions/*"]
-    R["lib/rules.ts<br/>WHO TO CALL"]
-    T["lib/triage.ts<br/>IS IT URGENT"]
-    D["lib/data.ts<br/>reads"]
-  end
-  subgraph Supabase
-    AU["Auth<br/>email · password · guest"]
-    PG[("Postgres<br/>RLS on every table")]
-  end
-  P --> MW --> SA
-  P --> D
-  SA --> T
-  D --> R
-  SA --> PG
-  D --> PG
-  MW --> AU
-  SA --> AU
-  </pre></div>
-  <p class="hinglish"><b>Hinglish mein:</b> phone pe page dikhta hai → server pe hamara logic chalta hai → data Supabase mein save hota hai. Login bhi Supabase sambhalta hai.</p>
-  <div class="grid2">
-    <div class="box"><h3>Pure logic</h3><p><code>rules.ts</code> and <code>triage.ts</code> never touch the database or the internet. Time is passed in. That is why we can test them with 18 automated tests.</p></div>
-    <div class="box"><h3>Server Actions</h3><p>Every change (add job, move stage, log a call) is a function that runs on the server, checks the input with <code>zod</code>, saves, and writes a history row.</p></div>
-  </div>
-</section>
-
-<section id="flows">
-  <p class="eyebrow">Chapter 4</p>
-  <h2>How requests flow</h2>
-  <h3>4a · Denise opens Today in the morning</h3>
-  <div class="diagram"><pre class="mermaid">
-sequenceDiagram
-  participant D as Denise's phone
-  participant M as middleware.ts
-  participant N as Today page (server)
-  participant S as Postgres (RLS)
-  D->>M: GET /app
-  M->>M: valid login cookie? (else → /login)
-  M->>N: continue
-  N->>S: select * from jobs
-  Note over S: RLS adds: where owner_id = her id
-  S-->>N: only her jobs
-  N->>N: callList(jobs, now, today in HER timezone)
-  N-->>D: blocks: Emergency · New · Quotes · Follow-ups · Schedule
-  </pre></div>
-  <h3>4b · She adds a job from a text message</h3>
-  <div class="diagram"><pre class="mermaid">
-sequenceDiagram
-  participant D as Denise
-  participant A as addJob (server action)
-  participant T as triageByRules
-  participant S as Postgres
-  D->>A: name, phone, "cooler is warm, food spoiling"
-  A->>A: validate with zod (name + problem required)
-  A->>S: open job with same phone?
-  alt duplicate found
-    A-->>D: warning: "Carla already has an open job" + Add anyway
-  else no duplicate
-    A->>T: is it urgent?
-    T-->>A: yes — mentions "warm"
-    A->>S: insert job (urgent) + history event
-    A-->>D: job page: "Saved — on your list as an emergency"
-  end
-  </pre></div>
-  <h3>4c · A reviewer clicks "Try the demo"</h3>
-  <div class="diagram"><pre class="mermaid">
-sequenceDiagram
-  participant R as Reviewer
-  participant A as tryDemo (server action)
-  participant AU as Supabase Auth
-  participant DB as Postgres
-  R->>A: click Try the demo
-  A->>AU: signInAnonymously()
-  AU->>DB: new auth user → trigger creates profile (is_guest = true)
-  A->>DB: rpc seed_demo_jobs() — runs as the guest, RLS applies
-  A-->>R: redirect to /app with 12 realistic jobs
-  </pre></div>
-  <p class="hinglish"><b>Hinglish mein:</b> "Try the demo" dabate hi ek naya private guest account banta hai, usmein 12 sample jobs daal dete hain, aur seedha dashboard khul jaata hai. Kisi aur ka data nahi dikhta.</p>
-</section>
-
-<section id="database">
-  <p class="eyebrow">Chapter 5</p>
-  <h2>The database</h2>
-  <div class="diagram"><pre class="mermaid">
-erDiagram
-  PROFILES ||--o{ JOBS : owns
-  JOBS ||--o{ JOB_EVENTS : "has history"
-  PROFILES {
-    uuid id PK "= the login user's id"
-    text business_name
-    text timezone "America/New_York"
-    text intake_slug "for the public form (V2)"
-    bool is_guest
-  }
-  JOBS {
-    uuid id PK
-    uuid owner_id FK
-    text customer_name
-    text phone
-    text source "call, web_form, text, referral, repeat"
-    text issue
-    bool urgent
-    text stage "new, quote, awaiting_yes, scheduled, done, lost"
-    numeric quote_amount
-    date scheduled_for
-    date follow_up_on "reminder"
-    timestamptz last_contact_at
-  }
-  JOB_EVENTS {
-    bigint id PK
-    uuid job_id FK
-    text kind "created, stage, called, note"
-    text detail
-  }
-  </pre></div>
-  <div class="box"><h3>Row-Level Security (RLS) — the privacy guarantee</h3>
-    <p>Every table has a rule like <code>owner_id = auth.uid()</code>. Postgres itself adds this filter to every query. So even if our code had a bug, it could never show Denise's jobs to another account. We tested it: a request with no login got <b>0 rows</b>, and a second account got <b>0 rows</b>, while the database held 13.</p></div>
-  <p class="hinglish"><b>Hinglish mein:</b> RLS matlab database khud chowkidaar hai. Har query mein apne aap "sirf mera data" wala filter lag jaata hai.</p>
-  <div class="grid2">
-    <div class="box"><h3>Why <code>stage</code> is a fixed list</h3><p>A <code>CHECK</code> constraint allows only the 6 stages. A typo can never create a 7th stage that the rules don't understand.</p></div>
-    <div class="box"><h3>Why a separate history table</h3><p>Jobs hold the <i>current</i> state; <code>job_events</code> holds <i>everything that happened</i>. That is what answers "did I send the quote, and when?"</p></div>
-  </div>
-</section>
-
-<section id="rules">
-  <p class="eyebrow">Chapter 6</p>
-  <h2>The call-today brain</h2>
-  <p>For every open job, <code>classify()</code> in <code>lib/rules.ts</code> asks the questions below in order. The first "yes" puts the job in a block with a plain-English reason.</p>
-  <div class="diagram"><pre class="mermaid">
-flowchart TD
-  J["One open job"] --> R0{"Reminder date set<br/>for today or earlier?"}
-  R0 -->|yes| B0["Reminders for today"]
-  R0 -->|no| S{"Which stage?"}
-  S -->|new| U{"Urgent?"}
-  U -->|yes| B1["🔴 Emergency · call now"]
-  U -->|no| B2["New requests · call back"]
-  S -->|quote| B3["Quotes to send<br/>(overdue after 24 h)"]
-  S -->|awaiting_yes| Q{"Quiet for 2+ days?"}
-  Q -->|yes| B4["Follow-ups due"]
-  Q -->|no| N["Not on today's list"]
-  S -->|scheduled| D{"Visit date?"}
-  D -->|none| B5["Ready to schedule"]
-  D -->|in the past| B6["Finished?"]
-  D -->|in the future| N
-  </pre></div>
-  <div class="tablebox"><table>
-    <thead><tr><th>Rule</th><th>Denise's words</th><th>Why this number</th></tr></thead>
-    <tbody>
-      <tr><td>New request → call back; urgent → top</td><td>"freezer down… I forgot to follow up"</td><td>Emergencies are the costliest misses</td></tr>
-      <tr><td>Waiting on quote → send it, overdue after 24 h</td><td>"three people are waiting on a quote"</td><td>A day is a fair time to price a repair</td></tr>
-      <tr><td>Quote sent, quiet 2 days → follow up</td><td>"this one hasn't heard from us in two days"</td><td>Her own number: <code>FOLLOW_UP_AFTER_DAYS = 2</code></td></tr>
-      <tr><td>Said yes, no date → schedule</td><td>"this one said yes and needs scheduling"</td><td>—</td></tr>
-    </tbody>
+  <h2><span class="n">04</span>The brain — <code>lib/rules.ts</code></h2>
+  <p>One pure function, <code>classify(job, now, today)</code>, decides if a job goes on the call list and why. No database, no clock inside — time is passed in, so it’s easy to test (18 tests).</p>
+  <div class="box tw"><table>
+    <tr><th>Rule</th><th>Goes on the list when…</th></tr>
+    <tr><td>Reminder</td><td>She set a follow-up date and it’s today or past (beats every other rule)</td></tr>
+    <tr><td>Emergency</td><td>Stage is New and marked urgent → always on top</td></tr>
+    <tr><td>New request</td><td>Nobody has called back yet (overdue after 24 h)</td></tr>
+    <tr><td>Quote to send</td><td>Customer is waiting on our price (overdue after 24 h)</td></tr>
+    <tr><td>Follow-up</td><td>Quote sent, no contact for <b>2+ days</b></td></tr>
+    <tr><td>Schedule</td><td>They said yes but no visit date</td></tr>
+    <tr><td>Finished?</td><td>Visit date has passed — mark it done</td></tr>
   </table></div>
-  <p class="hinglish"><b>Hinglish mein:</b> har job ke liye app 4-5 sawaal poochta hai. Jis sawaal ka jawab pehle "haan" aaye, job usi block mein chala jaata hai, wajah ke saath.</p>
-  <div class="box"><h3>Why rules, not AI, decide the list</h3><p>The list must be <b>predictable</b> (Denise trusts it), <b>explainable</b> (every item has a reason), <b>testable</b> (18 tests) and <b>free</b> (no API cost). AI is used only where language is messy — understanding a pasted text (Version 2).</p></div>
-</section>
+  <div class="hl red"><b>Urgency, the safe direction:</b> rules flag “freezer down / not holding temp / food at risk”. In V2, AI may only <b>raise</b> urgency, never lower it. A missed emergency costs more than a false alarm.</div>
 
-<section id="urgency">
-  <p class="eyebrow">Chapter 7</p>
-  <h2>Urgency rules (and the safe direction)</h2>
-  <div class="diagram"><pre class="mermaid">
-flowchart LR
-  T["Problem text"] --> K{"Urgent words?<br/>down · not cooling · warm<br/>leak · spoiling · emergency"}
-  K -->|yes| U["URGENT (sure)"]
-  K -->|no| M{"Routine words?<br/>maintenance · annual · quote for"}
-  M -->|yes| N["Not urgent (sure)"]
-  M -->|no| Q["Not sure"]
-  Q -.->|"Version 2"| AI["Ask the AI — it may only RAISE urgency"]
-  U --> O["Denise can always override"]
-  N --> O
-  </pre></div>
-  <p>The worst possible mistake is calling a real emergency "not urgent" — that is the lost $2,000. So the rules lean towards urgent, and the AI (Version 2) is only allowed to raise urgency, never lower it.</p>
-  <p class="hinglish"><b>Hinglish mein:</b> galti karni hi hai toh safe side pe — emergency ko normal samajhna sabse mehenga hai, isliye system "urgent" ki taraf jhukta hai.</p>
-</section>
-
-<section id="edges">
-  <p class="eyebrow">Chapter 8</p>
-  <h2>Edge cases and how each is solved</h2>
-  <div class="tablebox"><table>
-    <thead><tr><th>What could go wrong</th><th>How FollowUp handles it</th><th>Where</th></tr></thead>
-    <tbody>
-      <tr><td>Friday emergency waits until Monday</td><td>Emergencies stay in the top block until someone acts</td><td><code>rules.ts</code></td></tr>
-      <tr><td>Same customer calls and texts</td><td>Warns "already has an open job" with a link; "Add anyway" if it's new</td><td><code>addJob</code> + <code>phoneKey()</code></td></tr>
-      <tr><td>Phone written differently</td><td>Compares the last 10 digits only</td><td><code>phone.ts</code></td></tr>
-      <tr><td>Wrong button tapped</td><td>"Undo: back to …" one stage</td><td><code>moveBack</code></td></tr>
-      <tr><td>"Call me next Tuesday"</td><td>"Remind me on" date beats every rule</td><td><code>classify()</code> rule 0</td></tr>
-      <tr><td>Customer says no</td><td>"Mark lost" with a reason; leaves all lists</td><td><code>moveStage(lost)</code></td></tr>
-      <tr><td>Visit date passed, not marked done</td><td>Shows in "Finished?"</td><td><code>rules.ts</code></td></tr>
-      <tr><td>Server in another time zone</td><td>"Today" is computed in the business's time zone</td><td><code>todayIn()</code></td></tr>
-      <tr><td>Another account sees her data</td><td>Impossible — RLS on every table (tested)</td><td>migration SQL</td></tr>
-      <tr><td>Bad or huge input</td><td>zod validation + database length checks</td><td>actions + SQL</td></tr>
-      <tr><td>Empty account</td><td>Friendly empty screen + "Load sample jobs"</td><td>Today page</td></tr>
-      <tr><td>Open redirect after login</td><td>Only redirects inside <code>/app</code></td><td><code>safeNext()</code></td></tr>
-      <tr><td>Guessing which emails exist</td><td>Same error for wrong email and wrong password</td><td><code>logIn</code></td></tr>
-    </tbody>
+  <h2><span class="n">05</span>Edge cases we handled</h2>
+  <div class="box tw"><table>
+    <tr><th>Case</th><th>How it’s solved</th></tr>
+    <tr><td>Same customer twice</td><td>Match by last 10 digits of phone → warning + “add anyway”</td></tr>
+    <tr><td>Wrong time zone</td><td>“Today” computed in the business’s zone (America/New_York), not the server’s</td></tr>
+    <tr><td>Clicked wrong stage</td><td>“Undo: back to …” button; every move logged in history</td></tr>
+    <tr><td>Lost job comes back</td><td>Reopen from Lost → New, lost reason cleared</td></tr>
+    <tr><td>Fake error links</td><td>Login only shows known messages, never raw text from the URL</td></tr>
+    <tr><td>Email probing</td><td>Same error for wrong email or wrong password</td></tr>
+    <tr><td>Demo users see each other</td><td>Each guest is a separate anonymous user + RLS → 0 rows leak (tested)</td></tr>
   </table></div>
-</section>
 
-<section id="files">
-  <p class="eyebrow">Chapter 9</p>
-  <h2>File map</h2>
-  <div class="tablebox"><table>
-    <thead><tr><th>File</th><th>What it does</th></tr></thead>
-    <tbody>
-      <tr><td><code>lib/rules.ts</code></td><td>Who to call today, the blocks, the numbers. Pure and tested.</td></tr>
-      <tr><td><code>lib/triage.ts</code></td><td>Urgency keyword rules.</td></tr>
-      <tr><td><code>lib/stages.ts</code></td><td>Her stage names, next and previous stage.</td></tr>
-      <tr><td><code>lib/actions/jobs.ts</code></td><td>Every change: add, move, undo, log call, reminder, urgent toggle.</td></tr>
-      <tr><td><code>lib/actions/auth.ts</code></td><td>Log in, sign up, log out, guest demo.</td></tr>
-      <tr><td><code>lib/data.ts</code></td><td>Reads for pages (through RLS).</td></tr>
-      <tr><td><code>lib/db/server.ts</code> · <code>admin.ts</code></td><td>User database client (RLS) and admin client (server-only, V2 public form).</td></tr>
-      <tr><td><code>middleware.ts</code></td><td>Refreshes the login and guards <code>/app</code>.</td></tr>
-      <tr><td><code>supabase/migrations/…_init.sql</code></td><td>Tables, rules, RLS, profile trigger, demo-data function.</td></tr>
-      <tr><td><code>app/app/page.tsx</code></td><td>Today screen.</td></tr>
-      <tr><td><code>app/app/jobs/…</code></td><td>Jobs board, Add job, One job.</td></tr>
-      <tr><td><code>lib/rules.test.ts</code></td><td>18 tests for the logic.</td></tr>
-    </tbody>
-  </table></div>
-</section>
-
-<section id="why">
-  <p class="eyebrow">Chapter 10</p>
-  <h2>Why these tools</h2>
-  <div class="grid2">
-    <div class="box"><h3>Next.js</h3><p>Pages and server logic in one project. Deploys to Vercel in one step.</p></div>
-    <div class="box"><h3>Supabase</h3><p>Postgres + logins + RLS in one free service. Relational data fits jobs and their history.</p></div>
-    <div class="box"><h3>Server Actions</h3><p>No separate API server to build. Validation still happens on the server.</p></div>
-    <div class="box"><h3>zod</h3><p>Checks every form input on the server before it touches the database.</p></div>
-    <div class="box"><h3>Vitest</h3><p>Fast tests for the rules that decide who Denise calls.</p></div>
-    <div class="box"><h3>Groq + Resend (V2)</h3><p>Free, fast AI for reading texts; free email for the 7 AM list.</p></div>
-  </div>
-</section>
-
-<section id="claude">
-  <p class="eyebrow">Chapter 11</p>
-  <h2>How we used Claude Code</h2>
-  <ol class="steps">
-    <li><b>Context first:</b> PRD, TRD, system design, edge cases and decisions were written before any code, plus a <code>CLAUDE.md</code> briefing every session reads.</li>
-    <li><b>Tools:</b> official plugins (frontend-design, feature-dev, code-review, security-guidance), Context7 for current docs, Supabase and Vercel MCP.</li>
-    <li><b>Small steps:</b> database → logic + tests → actions → screens.</li>
-    <li><b>Verify every step:</b> types, lint, 18 tests, a production build, and every flow clicked through in a real browser at desktop and phone width.</li>
-    <li><b>The human decides:</b> what to build, her stage names, the rules, the safety choices. The AI writes most of the code; we review and test it.</li>
+  <h2><span class="n">06</span>Questions to practise out loud</h2>
+  <ol class="q">
+    <li><b>Why a call list and not a Kanban board?</b>Denise asked “who do I call today”. A board shows where jobs are; it doesn’t tell her what to do. Board = All jobs page, secondary.</li>
+    <li><b>Why rules, not AI, for the call list?</b>Rules are predictable, free, testable, and explainable to a non-technical owner. AI is for messy input (V2: paste a text → job).</li>
+    <li><b>What is RLS, and what happens without it?</b>Database-level filter per user. Without it, one missing <code>where</code> leaks every customer’s data.</li>
+    <li><b>How does the guest demo stay private?</b>Supabase anonymous sign-in → a real user id → seed function inserts jobs owned by that id → RLS.</li>
+    <li><b>What would you build next?</b>Public request form so web leads land automatically, a 7 AM email digest, and an emergency alert. Tech scheduling after that — she said it’s “nice later”.</li>
+    <li><b>What did you skip on purpose?</b>Invoicing, tech dispatch, SMS sending, multi-user teams. She said “nothing fancy” — scope was her words.</li>
   </ol>
-</section>
-
-<section id="interview">
-  <p class="eyebrow">Chapter 12</p>
-  <h2>Interview questions — practise out loud</h2>
-  <div>
-    <details><summary>Why didn't you build technician scheduling?</summary><p>She said it would be "nice later" and that leads and follow-ups are the main thing. Building it now would add screens she won't use every morning.</p></details>
-    <details><summary>Why do rules, not AI, decide the call list?</summary><p>The list must be predictable, explainable and testable, and it should cost nothing to run. AI is used only for messy language, like reading a pasted text.</p></details>
-    <details><summary>How is Denise's data kept private?</summary><p>Row-Level Security on every table. Postgres only returns rows where owner_id equals the logged-in user. We tested it: no login and a second account both got zero rows.</p></details>
-    <details><summary>Why is the follow-up threshold 2 days?</summary><p>Her own words: "this one hasn't heard from us in two days." It's one constant, FOLLOW_UP_AFTER_DAYS, that I'd tune with her after a week.</p></details>
-    <details><summary>What happens if two people edit the same job?</summary><p>The last change wins and the history shows both. For a two-person office that is enough; locking would be overkill.</p></details>
-    <details><summary>How does the guest demo stay private?</summary><p>Each click creates a new anonymous Supabase user with its own seeded jobs. RLS applies to it like any account.</p></details>
-    <details><summary>What would you measure after a month?</summary><p>Time from request to first call-back, the share of quotes followed up within 2 days, and whether she opens the app every morning. The goal is zero "$2,000 jobs gone".</p></details>
-    <details><summary>What did you decide versus what did Claude Code write?</summary><p>I decided what to build from the call, the stage names, the rules, the urgency safety direction and the privacy model. Claude Code wrote most of the code; I reviewed it, tested it and verified every flow in the browser.</p></details>
-  </div>
-</section>
-</main>
 </div>

@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db, currentUser } from "@/lib/db/server";
 import { getJob } from "@/lib/data";
-import { STAGE_LABEL, previousStage, isOpen } from "@/lib/stages";
+import { STAGE_SHORT, previousStage, isOpen } from "@/lib/stages";
 import { SOURCES, STAGES, type Stage } from "@/lib/types";
 import { triageByRules } from "@/lib/triage";
 import { phoneKey } from "@/lib/phone";
@@ -118,7 +118,7 @@ export async function moveStage(id: string, to: Stage, form?: FormData) {
   const supabase = await db();
   const { error } = await supabase.from("jobs").update(patch).eq("id", id);
   if (error) throw new Error("Could not update the job");
-  await event(id, user.id, "stage", `${STAGE_LABEL[job.stage]} → ${STAGE_LABEL[to]}${extra}`);
+  await event(id, user.id, "stage", `Moved from ${STAGE_SHORT[job.stage]} to ${STAGE_SHORT[to]}${extra}`);
   refresh(id);
 }
 
@@ -149,7 +149,7 @@ export async function logCall(id: string, form: FormData) {
   const note = String(form.get("note") ?? "").trim().slice(0, 300);
   const supabase = await db();
   await supabase.from("jobs").update({ last_contact_at: new Date().toISOString(), follow_up_on: null }).eq("id", id);
-  await event(id, user.id, "called", note ? `Called — ${note}` : "Called");
+  await event(id, user.id, "called", note ? `Called: ${note}` : "Called");
   refresh(id);
 }
 
