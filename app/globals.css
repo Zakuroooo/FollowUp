@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+/* ── "Cold Room" design tokens ─────────────────────────────────────────────
+   Frost ground, deep cold-teal ink, one warm alert colour (urgent / call).
+   Swapping a theme = changing these values only. */
+:root {
+  --frost: #eef2f0;
+  --frost-2: #e1e9e6;
+  --card: #ffffff;
+  --ink: #0d2b2f;
+  --ink-2: #2f4446;
+  --muted: #56696b;
+  --line: #d3ddd9;
+  --line-2: #e4ebe8;
+  --teal: #0f5257;
+  --alert: #d9552b;
+  --alert-ink: #a63a16;
+  --alert-bg: #fbede6;
+  --alert-line: #f2c4ae;
+  --ok: #2f7d4e;
+  --ok-bg: #e5f2ea;
+}
+
+@theme inline {
+  --color-frost: var(--frost);
+  --color-frost-2: var(--frost-2);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-teal: var(--teal);
+  --color-alert: var(--alert);
+  --color-alert-ink: var(--alert-ink);
+  --color-alert-bg: var(--alert-bg);
+  --color-alert-line: var(--alert-line);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --font-display: var(--font-bricolage), ui-sans-serif, sans-serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--frost);
+    color: var(--ink);
+    font-family: var(--font-figtree), ui-sans-serif, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  :focus-visible { outline: 2.5px solid var(--teal); outline-offset: 2px; border-radius: 6px; }
+}
+
+@utility btn { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] px-4 text-[15px] font-semibold transition-colors disabled:opacity-50; }
+@utility btn-ink { @apply btn bg-ink text-frost hover:bg-ink-2; }
+@utility btn-teal { @apply btn bg-teal text-white hover:bg-ink; }
+@utility btn-alert { @apply btn bg-alert text-white hover:bg-alert-ink; }
+@utility btn-line { @apply btn border-[1.5px] border-ink bg-card text-ink hover:bg-frost; }
+@utility btn-sm { @apply min-h-10 px-3 text-sm; }
+@utility card { @apply rounded-2xl border border-line bg-card; }
+@utility field { @apply min-h-11 w-full rounded-[10px] border border-line bg-[#f5f8f7] px-3 text-base text-ink placeholder:text-muted focus:border-teal focus:bg-card focus:outline-none; }
+@utility label { @apply mb-1.5 block text-[13px] font-semibold text-ink-2; }
+@utility eyebrow { @apply font-mono text-[11px] uppercase tracking-[0.08em] text-muted; }
+@utility display { @apply font-display font-bold tracking-[-0.02em]; }
