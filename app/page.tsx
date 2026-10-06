@@ -147,6 +147,31 @@ export default function Landing() {
         </Reveal>
       </section>
 
+      {/* HOW IT WORKS: the whole workflow in four steps */}
+      <section className="mx-auto max-w-7xl px-5 pb-28 md:px-8">
+        <Reveal>
+          <h2 className="max-w-2xl text-[34px] font-semibold leading-[1.05] tracking-[-0.035em] [text-wrap:balance] md:text-[52px]">
+            How it works. <span className="text-white/40">Four steps, every day.</span>
+          </h2>
+        </Reveal>
+        <Reveal delay={120}>
+          <ol className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 md:grid-cols-4">
+            {[
+              ["Requests come in by themselves", "Calls are recorded and written out, voicemails too. Texts, emails, the website form and referrals all land in one list, in the customer's own words."],
+              ["One list every morning", "At 7 AM: who to call and why, emergencies first. One tap after each call: quote sent, they said yes, no answer."],
+              ["Alerts that don't let go", "An emergency buzzes her phone and plays a sound, then again every 3 minutes until someone acts on it."],
+              ["Book it and see the numbers", "Pick a day, arrival window and technician. The Numbers page shows money waiting, wins, losses and why."],
+            ].map(([t, d], i) => (
+              <li key={t} className="bg-[#050506] p-7">
+                <span className="grid size-9 place-items-center rounded-full bg-brand/20 font-mono text-sm text-[#9fb6ff]">{i + 1}</span>
+                <h3 className="mt-5 text-lg font-semibold tracking-[-0.01em]">{t}</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-white/55">{d}</p>
+              </li>
+            ))}
+          </ol>
+        </Reveal>
+      </section>
+
       {/* QUOTE */}
       <section className="border-y border-white/10">
         <Reveal><figure className="mx-auto max-w-5xl px-5 py-24 md:px-8 md:py-32">

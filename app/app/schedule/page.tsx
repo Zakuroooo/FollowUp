@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getProfile, listJobs } from "@/lib/data";
 import { todayIn } from "@/lib/rules";
 import { money } from "@/components/ui";
+import { PageHelp } from "@/components/GettingStarted";
 import type { Job } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -43,6 +44,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
       <p className="text-[13px] font-medium text-brand">Next 14 days</p>
       <h1 className="display mt-1 text-[32px] leading-tight md:text-[38px]">Schedule</h1>
       <p className="mt-1.5 text-ink-2">Booked visits by day, and who&apos;s going. Book a visit from the job page.</p>
+      <PageHelp>To book: open a job that said yes → pick the day, arrival window and technician → <b>Book visit</b>. Tap a technician&apos;s name above to see only their visits. Jobs on the right still need a date.</PageHelp>
 
       {techs.length > 0 && (
         <nav aria-label="Filter by tech" className="mt-6 flex flex-wrap gap-2">

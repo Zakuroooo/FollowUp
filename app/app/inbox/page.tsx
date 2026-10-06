@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listMessages, type InboxItem } from "@/lib/data";
 import { ago } from "@/lib/rules";
+import { PageHelp } from "@/components/GettingStarted";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Inbox" };
@@ -33,6 +34,7 @@ export default async function Inbox({ searchParams }: { searchParams: Promise<{ 
       <p className="text-[13px] font-medium text-brand">{real.length} {real.length === 1 ? "request" : "requests"} received</p>
       <h1 className="display mt-1 text-[32px] leading-tight md:text-[38px]">Inbox</h1>
       <p className="mt-1.5 max-w-2xl text-ink-2">Every call, text, email and website request in one place, in the customer&apos;s own words. Each one is already a job on your list.</p>
+      <PageHelp>You don&apos;t need to do anything here: every message is already a job on your Call list. Use this page to read exactly what someone said, or to see everything that came in by text, call or email. Ads and invoices are hidden at the bottom.</PageHelp>
 
       <nav aria-label="Filter by how they reached you" className="mt-6 flex flex-wrap gap-2">
         <Link href="/app/inbox" className={`rounded-full px-3.5 py-1.5 text-sm ${!filter ? "bg-ink text-white" : "border border-line bg-card text-ink-2"}`}>All <span className="ml-1 font-mono text-[12px] opacity-70">{real.length}</span></Link>

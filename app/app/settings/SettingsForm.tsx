@@ -99,10 +99,10 @@ export function SettingsForm({ profile, formUrl, emailOn, aiOn, pushOn }: { prof
         <ul className="mt-4 flex flex-col gap-3 text-sm">
           {[
             ["Call list, stages, history", true, "Always on"],
-            ["Website request form", true, "Live at the link on the left"],
-            ["Device alerts (push)", pushOn, pushOn ? "Ready: turn them on per device, above" : "Needs push keys on the server"],
-            ["Email alerts and 7 AM list", emailOn, emailOn ? "Sending" : "Needs an email key on the server"],
-            ["AI: read pasted messages, spot emergencies, draft follow-ups", aiOn, aiOn ? "On, with a daily limit" : "Off, simple rules are used instead"],
+            ["Website request form", true, "Ready: link under Connect phone & email"],
+            ["Device alerts (push)", pushOn, pushOn ? "Ready: turn them on on each phone or computer" : "Not set up yet"],
+            ["Email alerts and 7 AM list", emailOn, emailOn ? "On" : "Not set up yet"],
+            ["AI: read pasted messages, spot emergencies, draft follow-ups", aiOn, aiOn ? "On" : "Off (simple rules are used instead)"],
           ].map(([label, on, note]) => (
             <li key={label as string} className="flex gap-3">
               <span className={`mt-1.5 size-2 shrink-0 rounded-full ${on ? "bg-brand" : "bg-line"}`} />

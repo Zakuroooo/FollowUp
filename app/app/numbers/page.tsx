@@ -4,6 +4,7 @@ import { callbackTime } from "@/lib/rules";
 import { SOURCE_LABEL } from "@/lib/stages";
 import { SOURCES } from "@/lib/types";
 import { money } from "@/components/ui";
+import { PageHelp } from "@/components/GettingStarted";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Numbers" };
@@ -45,6 +46,7 @@ export default async function Numbers() {
         <h1 className="display mt-1 text-[32px] leading-tight md:text-[38px]">Numbers</h1>
         <a href="/app/export" className="btn-line">Export CSV</a>
       </div>
+      <PageHelp><b>Time to call back</b> is the most important number: how long customers wait before you talk to them. Lower is better. <b>Why jobs were lost</b> tells you what to fix: &ldquo;never heard back&rdquo; means follow-ups are slipping.</PageHelp>
 
       <dl className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-3">
         {tiles.map(([v, k, sub]) => (

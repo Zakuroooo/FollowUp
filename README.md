@@ -1,126 +1,359 @@
+<div align="center">
+
+<img src="public/icon-512.png" alt="FollowUp logo" width="88" />
+
 # FollowUp
 
 **Every job request in one place. Every morning, one list of who to call and why.**
 
-A working prototype for Denise, who runs a commercial refrigeration repair company (4 techs, 15–20 requests a week). Her requests arrive by phone, text, a website form, referrals and a paper notebook. One forgotten callback on a Friday cost her a $2,000 freezer job. What she asked for:
+A lead and follow-up system for a small commercial refrigeration repair company,
+built from one discovery call with its owner.
 
+[**Live app**](https://followup-indol-seven.vercel.app) · [Try the demo (one click, no signup)](https://followup-indol-seven.vercel.app/login) · [Guide](docs/guide.html) · [Decisions](docs/DECISIONS.md)
+
+![Next.js](https://img.shields.io/badge/Next.js_15-000?logo=nextdotjs&logoColor=fff)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff)
+![Supabase](https://img.shields.io/badge/Supabase_Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=000)
+![Tailwind](https://img.shields.io/badge/Tailwind_v4-06B6D4?logo=tailwindcss&logoColor=fff)
+![Tests](https://img.shields.io/badge/tests-27_unit_·_4_e2e-2b5cff)
+![Built with Claude Code](https://img.shields.io/badge/built_with-Claude_Code-d97757)
+
+<a href="docs/demo.mp4"><img src="docs/screenshots/call-list.png" alt="The Call list: emergencies first, a reason on every row" width="900" /></a>
+
+**▶ [Watch the 100-second walkthrough](docs/demo.mp4)** (recorded on the live app)
+
+</div>
+
+---
+
+## Contents
+
+[The problem](#the-problem-in-her-words) · [What it does](#what-it-does) · [Five doors, one pipeline](#five-doors-one-pipeline) · [Who lands on the call list](#who-lands-on-the-call-list) · [Alerts](#alerts-she-cannot-miss) · [Architecture](#architecture) · [Data model](#data-model) · [Where AI is used](#where-ai-is-used-and-where-it-isnt) · [Security](#security) · [Tests](#tests) · [Run it](#run-it-locally) · [How it was built with Claude Code](#how-it-was-built-with-claude-code) · [Scope](#what-i-left-out-on-purpose) · [Next](#what-id-build-next)
+
+---
+
+## The problem, in her words
+
+Denise runs a commercial refrigeration repair company: 4 technicians, 15–20 new requests a week, mostly restaurants and grocery stores.
+
+> "Some people call my cell, some fill out the form on our website, some just text me. I have a notebook too. It is a mess."
+>
+> "A restaurant called on a Friday, freezer down, and I forgot to follow up… by Monday they had called someone else. That is a two thousand dollar job gone."
+>
 > "I just want to wake up and know who I need to call today. Waiting on quote, waiting on their yes, scheduled, done. I don't need anything fancy."
 
-**Live:** https://followup-indol-seven.vercel.app → **Try the demo** (one click, no signup, a private copy with a week of realistic jobs).
+**The real problem** isn't a lack of leads. Money leaks in the gap between *a request arriving* and *someone calling back*, because requests are spread across five places and nothing reminds her when one goes cold. FollowUp closes that gap.
+
+| She said | What FollowUp does |
+|---|---|
+| "Scattered in five places" | Calls, voicemails, texts, emails, website form and referrals all flow into **one pipeline** and **one list** |
+| "Wake up and know who to call" | The **Call list**: who to call, why, emergencies first. Also as a **7 AM email + phone alert** |
+| "Freezer down… by Monday they called someone else" | **Emergency alerts** to her phone instantly, **repeating every 3 minutes** until she acts |
+| "Did I send the quote? Did they say yes?" | Her own stage names, one-tap next step, full history on every job |
+| "My husband keeps asking for numbers" | **Numbers**: money waiting, win rate, time to call back, why jobs are lost |
+| Tech scheduling: "nice later" | Kept simple: assign a tech + arrival window, a 14-day **Schedule** |
 
 ---
 
 ## What it does
 
-### Version 1 — exactly what she asked for
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/call-list.png" alt="Call list" /><br/><b>Call list</b>: the one screen she opens every morning. A "Call first" card, a reason on every row, one-tap <i>No answer → tomorrow</i>, <i>Coming up</i>, time to call back.</td>
+<td width="50%"><img src="docs/screenshots/inbox.png" alt="Inbox" /><br/><b>Inbox</b>: every request in the customer's own words (voicemail transcripts included), filtered by how it arrived. Spam is filed away.</td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/job.png" alt="Job page" /><br/><b>Job page</b>: call/text, the next step as one question, what the customer said, an AI-drafted follow-up text, edit, notes, history, the customer's other jobs.</td>
+<td><img src="docs/screenshots/all-jobs.png" alt="All jobs" /><br/><b>All jobs</b>: separated by her stages, with counts and dollars per stage, search and CSV export.</td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/schedule.png" alt="Schedule" /><br/><b>Schedule</b>: booked visits by day, arrival window and technician; "said yes, needs a date".</td>
+<td><img src="docs/screenshots/numbers.png" alt="Numbers" /><br/><b>Numbers</b>: open jobs, money waiting, won/lost, quote win rate, time to call back, sources, lost reasons.</td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/connect.png" alt="Connect" /><br/><b>Connect phone & email</b>: one-time setup per channel, plus a simulator that sends a test text, email or voicemail (or a real recording) through the real pipeline.</td>
+<td align="center"><img src="docs/screenshots/phone-call-list.png" alt="Phone" width="240" /><br/><b>Phone-first</b>: installable as an app (needed for iPhone push alerts).</td>
+</tr>
+</table>
 
-| Screen | What Denise gets |
-|---|---|
-| **Call list** (home) | "8 calls to make today." The most important call sits on top in a **Call first** card (emergencies always first). Every other row says *what to do* and *why*: "Send quote · asked 3 days ago · overdue", "Follow up · $2,400 quote · quiet 4 days". One tap to call. |
-| **No answer** | One tap moves the call to **tomorrow's** list, so a customer who didn't pick up can't fall through the cracks. |
-| **Coming up** | Jobs that aren't due yet and the day each one returns ("Tomorrow · follow up if no answer", "Thu Oct 8 · visit booked"). |
-| **All jobs** | Every job separated by **her** stages: New → Waiting on quote → Waiting on their yes → Scheduled → Done (or Lost). Tiles show count and dollars per stage; "Only these" filters to one stage. Search, CSV export. |
-| **Job page** | Who, what's broken, Call / Text, quote, visit date, reminder. The next step is one question ("Did they say yes?") with one button. Full history of every change. Undo. "Mark as lost" asks why, from a fixed list. |
-| **Add a job** | 15 seconds. "Freezer down", "not holding temp", "food at risk" mark it urgent on their own. A known phone number fills in the customer and warns about duplicates. |
-| **Numbers** | **Time to call back** (median hours from request to first conversation, the number behind the lost $2,000 job), money waiting on a yes, won/lost this week. |
-
-### Version 2 — automation that removes work from her
-
-| Feature | How it works |
-|---|---|
-| **Website request form** (`/r/<code>`) | A public "Request service" page for her website. Requests land straight on the call list, with an "Equipment is down" box for emergencies. Spam trap, rate limit (5 per visitor per 10 min), and a resubmission adds to the same request instead of creating a duplicate. |
-| **Device alerts (push)** | One tap ("Turn on alerts") and every website request buzzes her phone or computer, even with FollowUp closed. Emergencies stay on screen until she taps them and open the job directly. Installable as an app (needed for iPhone alerts, iOS 16.4+). The open app also plays a chime (a triple beep for emergencies) and flashes the tab title. |
-| **Instant alert email** | The moment a website request arrives, she gets an email; the subject starts with **EMERGENCY** when equipment is down. Saved first, emailed second, so an email failure never loses a request. |
-| **7 AM call list email** | The same list as the home screen, in her inbox every morning (Vercel Cron). At most once a day per business. |
-| **Paste a message → job** (AI) | Paste a text, voicemail transcript or email; the form fills itself (name, business, phone, problem, urgency). She checks, then saves. |
-| **Emergency triage** (AI) | Rules decide first. Only when the rules are unsure does the AI look, and it can only make a job **more** urgent, never less: a missed emergency costs more than a false alarm. |
-| **Draft a follow-up** (AI) | One tap writes a short, editable text to chase a quote or confirm a visit. Copy it or open it in Messages. Nothing is ever sent to a customer automatically. |
-| **Also in V1** | Edit a job's details after saving, internal notes ("ask for Mike") that don't count as contact, the customer's other jobs on the job page, business phone shown on the request form ("Equipment down? Call us now"), a setup reminder until it's filled in, the call list refreshing itself with a "new request" notice, show password, forgot/reset password. |
-| **Settings** | Request-form link (copy / preview), business name, time zone ("today" is the shop's day, not the server's), morning email on/off, and what's switched on. |
-
-Every AI feature has a plain fallback (regex extraction, rules, templates), so the app works fully without an AI key. AI answers are cached and capped per business per day.
+**Also:** public request form (`/r/<code>`) with an "equipment is down" box · referral links (`?ref=Tony`) · paste a message and AI fills the job · repeat customers recognised by phone · lost reasons from a fixed list · 3 unanswered tries → "mark lost?" (never automatic) · themed date picker with quick picks · password reset · one-click private demo.
 
 ---
 
-## How "who to call today" is decided
+## Five doors, one pipeline
 
-Pure functions in [`lib/rules.ts`](lib/rules.ts) (no database, no clock of their own, so they are fully unit-tested):
+Every channel calls the same function, [`lib/ingest.ts`](lib/ingest.ts). The customer's original words (or call transcript) are always stored.
 
-| Job | On the list when | Shown as |
+```mermaid
+flowchart LR
+  subgraph Doors
+    W[Website form<br/>/r/&lt;code&gt;]
+    R[Referral link<br/>?ref=Tony]
+    E[Email<br/>/api/inbound/&lt;token&gt;/email]
+    S[Text<br/>Twilio → /sms]
+    C[Call<br/>Twilio → /voice<br/>recorded with consent]
+    V[Missed call<br/>voicemail]
+    P[Pasted message<br/>Add a job]
+  end
+  C -->|recording| T[Whisper<br/>transcription]
+  V -->|recording| T
+  W & R & E & S & T & P --> I
+
+  subgraph I[ingest]
+    direction TB
+    I1[Read it: AI or rules<br/>name · phone · problem · urgency] --> I2{Spam or invoice?}
+    I2 -- yes --> I3[Filed as not a job]
+    I2 -- no --> I4{Same customer<br/>has an open job?}
+    I4 -- yes --> I5[Attach message ·<br/>back on today's list]
+    I4 -- no --> I6[New job]
+  end
+  I5 & I6 --> M[(Original message<br/>stored)]
+  I5 & I6 --> A[Alerts: push · sound · email]
+```
+
+| Door | Status | Identity trusted for matching |
 |---|---|---|
-| New + urgent | immediately, always first | Emergency · Call now |
-| New | immediately (overdue after 24 h) | Call back |
-| Waiting on quote | immediately (overdue after 24 h) | Send quote |
-| Waiting on their yes | after **2 quiet days** | Follow up |
-| Scheduled, no date | immediately | Pick a date |
-| Scheduled, date passed | the day after | Mark done |
-| A date she set ("call me Tuesday", or *No answer*) | on that day, overriding the rules above | Reminder |
+| Website form, referral link | **Live** | Only jobs that also came from the form (anyone can type a phone number) |
+| Pasted message | **Live** | Signed-in owner |
+| Email | Built · needs inbox forwarding | Sender address, only against jobs earlier emails from that address created |
+| Text, call, voicemail | Built · needs a Twilio number | Caller ID from the phone network, verified by Twilio's HMAC signature |
+
+Calls ring through to her cell after a "this call may be recorded" notice (two-party-consent states), are recorded both sides, transcribed with Groq Whisper and turned into a job. Unauthenticated doors (form, email) can surface a job and alert her, but **can't change urgency or her reminders** on an existing job.
+
+---
+
+## Who lands on the call list
+
+Pure functions in [`lib/rules.ts`](lib/rules.ts): no database, no clock of their own, fully unit-tested. "Today" is the shop's time zone, not the server's.
+
+| Situation | On the list | Says |
+|---|---|---|
+| New + urgent | Immediately, always first | **Call now** |
+| They wrote/called again, unanswered | Immediately | **Reply** · "They messaged 10 min ago" |
+| New | Immediately (overdue after 24 h) | **Call back** |
+| Waiting on quote | Immediately (overdue after 24 h) | **Send quote** |
+| Waiting on their yes | After **2 quiet days** | **Follow up** · "$2,400 quote · quiet 4 days" |
+| Said yes, no date | Immediately | **Pick a date** |
+| Visit date passed | Next day | **Mark done** |
+| A date she set / *No answer* | That day; after 3 tries suggests **mark lost?** | **Call** / **Last try** |
+
+```mermaid
+flowchart LR
+  N[New] --> Q[Waiting on quote] --> Y[Waiting on their yes] --> S[Scheduled<br/>date · window · tech] --> D[Done]
+  N -.-> L[Lost + reason]
+  Q -.-> L
+  Y -.-> L
+```
+
+---
+
+## Alerts she cannot miss
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant C as Customer
+  participant F as FollowUp
+  participant P as pg_cron (every 3 min)
+  participant D as Denise
+  C->>F: "Freezer is down!" (any door)
+  F->>D: Push notification (stays on screen) + sound + email
+  Note over D: On another job site…
+  P->>F: /api/cron/realert
+  F->>D: "Still waiting: EMERGENCY Russo's · 6 min"
+  P->>F: …every 3 min, max 10
+  D->>F: Calls / moves the job / taps "I'm on it"
+  Note over F: acknowledged → alerts stop
+```
+
+- **Web Push** (VAPID) to phone or computer, even with the app closed; emergencies use `requireInteraction` and open the job on tap. Installable PWA (iOS 16.4+ needs Home Screen).
+- **In the open app**: a chime for new requests, an urgent triple beep for emergencies (Web Audio, no files), flashing tab title, a red bar on every page, live refresh every 20 s.
+- **Repeat**: Supabase `pg_cron` + `pg_net` hit `/api/cron/realert` every 3 minutes (Vercel's free plan only runs daily crons). The auth token is generated inside the database and never committed.
+- **Email** (Resend): instant alert per request (display name = the customer, Reply goes to them) and the 7 AM list, claimed atomically so it can never double-send.
 
 ---
 
 ## Architecture
 
-```
-Browser ── Next.js 15 (App Router, Server Components, Server Actions) ── Supabase Postgres
-              │  middleware: session + route protection                    │  Row-Level Security on every table
-              │  lib/rules.ts: call-list logic (pure, tested)               │  column GRANTs on profiles
-              │  lib/ai.ts: Groq (JSON mode) + cache + daily cap            │  anonymous auth = private demo
-              │  lib/email.ts: Resend · lib/push.ts: Web Push (VAPID)        │
-              └─ Vercel Cron: 7 AM email (11:00 UTC = 7 AM Eastern), daily keep-alive
+```mermaid
+flowchart TB
+  B[Browser / installed PWA<br/>service worker for push] -->|Server Components · Server Actions| N
+  subgraph N[Next.js 15 on Vercel]
+    MW[middleware<br/>session + route guard]
+    RU[lib/rules.ts<br/>call-list logic, pure]
+    IN[lib/ingest.ts<br/>one pipeline]
+    AI[lib/ai.ts<br/>Groq JSON + cache + daily cap]
+    PU[lib/push.ts · lib/email.ts]
+    WH[/api/inbound/&lt;token&gt;/…<br/>email · sms · voice/]
+    CR[/api/cron/digest · realert · keepalive/]
+  end
+  N -->|user client · RLS| DB[(Supabase Postgres)]
+  N -->|service role · server-only| DB
+  DB -->|pg_cron every 3 min| CR
+  TW[Twilio] --> WH
+  EM[Inbound email] --> WH
+  AI --> GQ[Groq<br/>gpt-oss-20b · Whisper]
+  PU --> RS[Resend] & WP[Web Push services]
 ```
 
-- **Privacy is enforced by the database**, not just the code: every row has an `owner_id`, and RLS policies only return `owner_id = auth.uid()`. A bug in a query can't leak another business's customers.
-- **Guest demo** = Supabase anonymous sign-in + a seed function, so every reviewer gets their own private sandbox.
-- **Server-only admin client** (service role) is used only where there is no signed-in user: the public form, the cron jobs and the AI cache. `server-only` makes the build fail if it is ever imported into browser code.
-- **Abuse limits**: device-alert endpoints must belong to a real push service (database CHECK, so no SSRF), emails only go to the account's own verified login address (none from the demo); the public form can't edit jobs it didn't create; profile fields like `is_guest` are locked at the database with column GRANTs.
+**Stack:** Next.js 15 (App Router, Server Actions) · TypeScript · Tailwind v4 · Supabase (Postgres, Auth, RLS, pg_cron, pg_net) · Groq (`openai/gpt-oss-20b`, `whisper-large-v3-turbo`) · Resend · Web Push · Vercel · Vitest · Playwright.
 
-More: [PRD](docs/PRD.md) · [TRD](docs/TRD.md) · [System design](docs/SYSTEM-DESIGN.md) · [Edge cases](docs/EDGE-CASES.md) · [Decisions](docs/DECISIONS.md) · [How AI was used to build it](docs/AI-WORKFLOW.md)
+---
+
+## Data model
+
+```mermaid
+erDiagram
+  PROFILES ||--o{ JOBS : owns
+  PROFILES ||--o{ JOB_EVENTS : owns
+  PROFILES ||--o{ MESSAGES : receives
+  PROFILES ||--o{ PUSH_SUBSCRIPTIONS : "alerts go to"
+  PROFILES ||--o{ AI_USAGE : "capped by"
+  JOBS ||--o{ JOB_EVENTS : "history"
+  JOBS ||--o{ MESSAGES : "original words"
+
+  PROFILES {
+    uuid id PK "= auth.users.id"
+    text business_name
+    text business_phone
+    text timezone "today = her day"
+    text intake_slug UK "public form /r/<slug>"
+    text inbound_token UK "secret webhook path"
+    text_array techs
+    text digest_email "confirmed only"
+    date digest_sent_on "once a day"
+    bool is_guest
+  }
+  JOBS {
+    uuid id PK
+    uuid owner_id FK
+    text customer_name
+    text phone
+    text source "call|text|email|web_form|referral|repeat"
+    text issue
+    bool urgent
+    text stage "new|quote|awaiting_yes|scheduled|done|lost"
+    numeric quote_amount
+    date scheduled_for
+    text visit_window
+    text tech
+    date follow_up_on
+    int attempts
+    timestamptz first_response_at "time to call back"
+    timestamptz last_inbound_at "they messaged again"
+    timestamptz acknowledged_at "stops repeat alerts"
+  }
+  JOB_EVENTS {
+    bigint id PK
+    uuid job_id FK
+    text kind "created|stage|called|note|ai"
+    text detail
+  }
+  MESSAGES {
+    bigint id PK
+    uuid job_id FK
+    text channel "web_form|email|sms|call|voicemail|paste"
+    text body "verbatim / transcript"
+    text outcome "new_job|added_to_job|not_a_job"
+  }
+  PUSH_SUBSCRIPTIONS {
+    bigint id PK
+    text endpoint UK "allow-listed push services"
+  }
+```
+
+Also: `ai_cache` (hash → result), `form_hits` (rate limiting, hashed IPs), `app_secrets` (server-only). Migrations live in [`supabase/migrations`](supabase/migrations).
+
+---
+
+## Where AI is used, and where it isn't
+
+| Used for | Why AI | Fallback without a key |
+|---|---|---|
+| Reading a pasted text / email / transcript into job fields | Messy human text | Regex extraction (phone, name, business) |
+| Is this an emergency? (only when rules are unsure) | Ambiguous wording | Rules decide alone |
+| Is this a job at all? (spam, invoices) | Judgment on free text | Keyword filter |
+| Drafting a follow-up text | Tone | Templates per stage |
+| Call / voicemail transcription | Speech | Job still created, "listen to the recording" |
+
+**Not AI:** who's on the call list, ordering, matching customers, stages, numbers. Those are plain, tested code, so Denise can always see *why* someone is on her list. AI can only **raise** urgency, never lower it: a missed emergency costs ~$2,000, a false alarm costs one phone call. Answers are cached by hash and capped per business per day.
+
+---
+
+## Security
+
+- **Row-Level Security on every table:** a business only ever sees its own rows (`owner_id = auth.uid()`), enforced by Postgres, not by app code. History entries can only be attached to jobs you own.
+- **Column-level GRANTs** on `profiles`: users can't flip `is_guest`, the webhook token or the "sent today" marker.
+- **Webhooks:** a 128-bit per-business token in the path; Twilio requests verified with HMAC-SHA1 signatures; recordings fetched only from `api.twilio.com` (no SSRF).
+- **Public form:** honeypot field, rate limit (5 per visitor per 10 min, IPs hashed), can't edit jobs it didn't create.
+- **Email:** sent only to the owner's *confirmed* address (DB trigger on confirmation), never from the demo; display name sanitized and quoted.
+- **Push:** endpoints allow-listed to real push services by a DB `CHECK` and in code; devices can't be taken over by another account.
+- **Server-only service role** (`server-only` import fails the build if it ever reaches the browser). Zod validation on every input.
+
+An automated security review ran on every commit and flagged **12 issues** during development (an email relay through the demo, SSRF via push endpoints, a race condition on the daily email, identity spoofing on email matching, and others). All were fixed, and the fixes were proven with tests that attempt each attack.
+
+---
+
+## Tests
+
+```bash
+npm test          # 27 unit tests: call-list rules, snooze/coming-up, time to call back, repeat-alert policy,
+                  # triage, phone matching, AI fallbacks
+npm run e2e       # 4 Playwright tests in real Chrome: demo flow, stages + CSV, route protection,
+                  # website request → emergency on the owner's list
+npm run lint && npm run typecheck
+```
+
+[CI](.github/workflows/ci.yml) runs lint, types, unit tests and the build on every push, then the browser tests against a throwaway Supabase.
 
 ---
 
 ## Run it locally
 
-Requires Node 20+ and Docker (for local Supabase).
+Requires Node 20+ and Docker.
 
 ```bash
 npm install
-npx supabase start                 # local Postgres + Auth; prints the keys
-cp .env.example .env.local         # paste the local URL + anon + service-role keys
-npx supabase db reset              # creates the tables, policies and demo seed
+npx supabase start                 # local Postgres + Auth (prints keys)
+cp .env.example .env.local         # paste the local URL + keys
+npx supabase db reset              # tables, policies, demo seed
 npm run dev -- -p 3200             # http://localhost:3200 → Try the demo
 ```
 
-## Tests
-
-```bash
-npm test          # 24 unit tests: call-list rules, snooze/coming-up, time to call back, triage, phone matching, AI fallbacks
-npm run e2e       # 4 browser tests (Playwright, real Chrome): demo flow, stages + CSV, route protection, website request → emergency
-npm run lint && npm run typecheck
-```
-
-GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, types, unit tests and the build on every push, then the browser tests against a throwaway Supabase.
-
-## Deploy (Vercel + Supabase)
-
-1. Create a Supabase project, then `npx supabase link --project-ref <ref>` and `npx supabase db push`.
-2. In Supabase → Authentication → Sign In / Providers, turn on **Anonymous sign-ins** (for the demo).
-3. Run `bash scripts/setup-vercel-env.sh`: it copies the Supabase keys into Vercel, generates the push keys and cron secret, and asks for the Groq / Resend keys (hidden input). Or add the variables from [`.env.example`](.env.example) by hand. `CRON_SECRET` is required for the 7 AM email; `GROQ_API_KEY` and `RESEND_API_KEY` switch on AI and email.
-4. `vercel deploy --prod`. Crons are defined in [`vercel.json`](vercel.json).
-
-## Deliberately left out
-
-- **Technician scheduling / dispatch.** She called it "nice later… I kind of know where everyone is."
-- **Sending quotes, invoices, payments.** She asked to *track* quotes, not to send them.
-- **Charts and dashboards.** "I don't need anything fancy." The numbers she needs are one line each.
-- **Auto-texting customers.** She owns the relationship; FollowUp drafts, she sends.
-
-## What I'd build next, in order
-
-1. **Missed calls and texts become jobs**: forward the business number through Twilio, so her two biggest channels stop needing manual entry. (Needs a paid US number, so it's designed, not built.)
-2. **Text alerts** for emergencies when she's on a job site and not reading email.
-3. **Per-person logins** (owner, office, tech) and an audit of who changed what.
-4. **The "nice later"**: a simple week view of which tech is where.
+**Deploy:** `npx supabase link && npx supabase db push`, turn on anonymous sign-ins (for the demo), then `bash scripts/setup-vercel-env.sh` (copies keys into Vercel, generates push keys and the cron secret, prompts for Groq/Resend with hidden input) and `vercel deploy --prod`. All variables are documented in [`.env.example`](.env.example).
 
 ---
 
-Built with Next.js, TypeScript, Tailwind, Supabase, Groq, Resend and Vercel. Built with Claude Code; the process is written up in [docs/AI-WORKFLOW.md](docs/AI-WORKFLOW.md).
+## How it was built with Claude Code
+
+I built FollowUp with Claude Code as the engineer and myself as the product owner and reviewer. AI wrote most of the code; I decided what to build, what *not* to build, and checked that every screen did what Denise needed. The workflow:
+
+| Practice | What it looked like here |
+|---|---|
+| **Context before code** | Wrote [PRD](docs/PRD.md), [TRD](docs/TRD.md), [system design](docs/SYSTEM-DESIGN.md), [edge cases](docs/EDGE-CASES.md) and a [`CLAUDE.md`](CLAUDE.md) with the rules of the project *before* the first line of code, so every session started with the same understanding. |
+| **Every feature traced to her words** | The [decisions log](docs/DECISIONS.md) (22 entries) records each choice, why, and the rejected alternative, e.g. "rules decide the call list, not AI". |
+| **Tools wired in, not pasted in** | Plugins: `frontend-design`, `feature-dev`, `code-review`, `security-guidance`. MCP / CLIs: Supabase (migrations pushed from the terminal), Vercel (deploys, env checks), Context7 (current library docs), a browser for verification. Custom slash commands for verify / explain / demo data. |
+| **Verify, don't trust** | After each feature: unit tests, Playwright, scripted click-throughs in headless Chrome, and screenshots at laptop and phone width, reviewed before every deploy. Bugs found this way included a React 19 form reset that lost typed input and a stepper rendering glitch. |
+| **Security review on every commit** | The `security-guidance` hook reviewed each commit; 12 findings, each fixed and proven with an attack test (e.g. 5 simultaneous "send" clicks → exactly 1 email). |
+| **Research, then judgment** | Looked at award-winning SaaS sites for the visual direction and at other approaches to the same brief for gaps; took ideas only where they traced back to Denise's call, and wrote everything fresh. |
+| **Honest limits** | What needs a paid phone number or email forwarding is built and testable through the simulator, and labelled as such rather than faked. |
+
+---
+
+## What I left out on purpose
+
+- **Full dispatch / route planning.** She said "nice later… I kind of know where everyone is", so it's a simple tech + window + 14-day view.
+- **Sending quotes, invoices, payments.** She asked to *track* quotes, not send them; her husband does the books.
+- **Auto-texting customers.** She owns the relationship (and US A2P rules apply); FollowUp drafts, she sends.
+- **Charts for their own sake.** "I don't need anything fancy." Every number on the Numbers page answers a question someone asked.
+
+## What I'd build next
+
+1. **Turn on the Twilio number**: the call/text/voicemail pipeline is built and signature-checked; it needs a number and two keys.
+2. **Forward her inbox** to the email door.
+3. **Per-person logins** (owner, office, tech) with an audit trail.
+4. **Tech app**: each tech sees their day and marks jobs done, which closes "visit date passed" automatically.
+
+---
+
+<div align="center"><sub>FollowUp · built for a refrigeration repair shop · Next.js · Supabase · Vercel · Claude Code</sub></div>

@@ -46,8 +46,33 @@ code{font:13px "Geist Mono",ui-monospace,monospace;background:var(--subtle);bord
   <h1>The complete guide, in plain words</h1>
   <p class="lede">What FollowUp does, how Denise uses it every day, how customers reach her, how alerts work, and what is connected. No code knowledge needed.</p>
   <nav class="toc" aria-label="Contents">
-    <a href="#idea">The idea</a><a href="#day">Denise's day</a><a href="#doors">How customers reach her</a><a href="#job">A job's journey</a><a href="#alerts">Alerts</a><a href="#techs">Technicians</a><a href="#screens">Every screen</a><a href="#status">What's connected</a><a href="#new">What's new</a><a href="#words">Word list</a><a href="#todo">Your to-do</a>
+    <a href="#flow">Start to end</a><a href="#idea">The idea</a><a href="#day">Denise's day</a><a href="#doors">How customers reach her</a><a href="#job">A job's journey</a><a href="#alerts">Alerts</a><a href="#techs">Technicians</a><a href="#screens">Every screen</a><a href="#status">What's connected</a><a href="#new">What's new</a><a href="#words">Word list</a><a href="#todo">Your to-do</a>
   </nav>
+
+  <h2 id="flow"><span class="n">00</span>The whole app, start to end</h2>
+  <pre class="mermaid">
+flowchart TB
+  L[Landing page<br/>followup-indol-seven.vercel.app] --> D{Try the demo<br/>or sign up?}
+  D -- Try the demo --> G[Private copy with sample jobs<br/>3 emergencies waiting]
+  D -- Sign up --> S1[Getting started checklist<br/>4 steps on the Call list]
+  S1 --> S2[Settings: business name + phone,<br/>technicians, turn on alerts]
+  S2 --> S3[Connect: put the form link on the website;<br/>later a Twilio number + email forwarding]
+  S3 --> R[Requests arrive by themselves<br/>calls · voicemail · texts · email · website · referrals]
+  G --> CL
+  R --> AL[Alert: phone + sound + email<br/>repeats every 3 min if it's an emergency]
+  AL --> CL[Call list: who to call and why]
+  CL --> J[Job page: call, then one tap<br/>quote sent / they said yes / no answer]
+  J --> B[Book: date + arrival window + technician]
+  B --> SC[Schedule] --> DN[Done]
+  J --> NB[Numbers: wins, losses, why]
+  </pre>
+  <ol class="steps">
+    <li><b>Landing page.</b>Explains the product in four steps. "Try the demo" opens a private copy with sample jobs; no signup.</li>
+    <li><b>First login (real account).</b>A "Getting started" checklist appears on the Call list: add business name and phone, add a first job, put the form on the website, add technicians. Each step ticks itself when done.</li>
+    <li><b>Settings, once.</b>Turn on alerts on each phone/computer, fill in the business details and techs, press Save. Every page has a "How to use this page" note.</li>
+    <li><b>Connect phone &amp; email, once.</b>Copy the website-form link onto the website (works now). Phone and email need one setup step each; the "Try it" box shows how it will work.</li>
+    <li><b>Every day.</b>Requests arrive and alert her; the Call list tells her who to call; one tap after each call; book visits; check Numbers at the end of the week.</li>
+  </ol>
 
   <h2 id="idea"><span class="n">01</span>The idea in one minute</h2>
   <p>Denise fixes fridges and freezers for restaurants and shops. Customers reach her in <b>five ways</b>: phone calls, texts, her website form, emails and referrals. She used to keep it all in her head and a notebook, and one forgotten callback lost her a <b>$2,000</b> job.</p>
@@ -176,11 +201,11 @@ sequenceDiagram
   <h2 id="status"><span class="n">08</span>Is everything connected? (honest status)</h2>
   <div class="box tw"><table>
     <tr><th>Part</th><th>Status</th><th>What's needed</th></tr>
-    <tr><td>Screens + database + login</td><td><span class="pill ok">Built and connected</span></td><td>Live site needs the Supabase key in Vercel (one script, see to-do)</td></tr>
+    <tr><td>Screens + database + login + demo</td><td><span class="pill ok">Live</span></td><td>—</td></tr>
     <tr><td>Website form, referrals, paste</td><td><span class="pill ok">Working</span></td><td>—</td></tr>
-    <tr><td>AI (reading messages, spotting emergencies, drafting texts, call transcripts)</td><td><span class="pill ok">Built</span></td><td>Groq key in Vercel (done)</td></tr>
+    <tr><td>AI (reading messages, spotting emergencies, drafting texts, call transcripts)</td><td><span class="pill ok">Live, tested</span></td><td>—</td></tr>
     <tr><td>Phone alerts, sound, repeat every 3 min</td><td><span class="pill ok">Built and tested</span></td><td>—</td></tr>
-    <tr><td>Emails (alerts + 7 AM)</td><td><span class="pill ok">Built</span></td><td>Resend key in Vercel</td></tr>
+    <tr><td>Emails (alerts + 7 AM)</td><td><span class="pill ok">Live</span></td><td>Free Resend plan sends to your own address until a domain is verified</td></tr>
     <tr><td>Calls, voicemails, texts</td><td><span class="pill wait">Built, not live</span></td><td>A Twilio number (paid) + its two keys</td></tr>
     <tr><td>Email inbox → jobs</td><td><span class="pill wait">Built, not live</span></td><td>Email forwarding (Resend Inbound / Zapier)</td></tr>
     <tr><td>Tests</td><td><span class="pill ok">27 unit + 4 browser tests passing</span></td><td>—</td></tr>

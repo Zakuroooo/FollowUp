@@ -314,3 +314,13 @@ export async function acknowledge(id: string) {
   await event(id, user.id, "note", "On it: emergency alerts stopped");
   refresh(id);
 }
+
+/** Delete a job added by mistake. Its history goes with it; any original message stays in the Inbox. */
+export async function deleteJob(id: string) {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const supabase = await db();
+  await supabase.from("jobs").delete().eq("id", id); // RLS: only your own jobs
+  revalidatePath("/app", "layout");
+  redirect("/app/jobs");
+}

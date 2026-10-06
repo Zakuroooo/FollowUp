@@ -4,6 +4,7 @@ import { ago, summary } from "@/lib/rules";
 import { STAGE_LABEL, STAGE_SHORT, SOURCE_LABEL } from "@/lib/stages";
 import type { Stage } from "@/lib/types";
 import { money } from "@/components/ui";
+import { PageHelp } from "@/components/GettingStarted";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,7 @@ export default async function AllJobs({ searchParams }: { searchParams: Promise<
         <div>
           <p className="text-[13px] font-medium text-brand">{s.open} open jobs</p>
           <h1 className="display mt-1 text-[32px] leading-tight md:text-[38px]">All jobs</h1>
+          <PageHelp>Every job, grouped by where it stands. Tap a box at the top to see only that stage. Tap any job to open it. <b>Export CSV</b> gives your bookkeeper a spreadsheet.</PageHelp>
         </div>
         <div className="hidden gap-2 md:flex">
         <a href="/app/export" className="btn-line">

@@ -10,6 +10,8 @@ import { money, PhoneIcon } from "@/components/ui";
 import { CallListIllustration } from "@/components/Illustration";
 import { Sparkles } from "@/components/Sparkles";
 import { AlertsToggle } from "@/components/AlertsToggle";
+import { GettingStarted, PageHelp } from "@/components/GettingStarted";
+import { listMessages } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +24,7 @@ const PIPE: { stage: Stage; bar: string }[] = [
 
 /** The call list: who to call today, and why. Emergencies first. */
 export default async function CallList() {
-  const [jobs, profile] = await Promise.all([listJobs(), getProfile()]);
+  const [jobs, profile, msgs] = await Promise.all([listJobs(), getProfile(), listMessages(5)]);
   const tz = profile?.timezone ?? "America/New_York";
   const now = new Date();
   const today = todayIn(tz, now);
@@ -62,6 +64,14 @@ export default async function CallList() {
 
   return (
     <div className="mx-auto max-w-[1240px]">
+      {profile && !profile.is_guest && (
+        <GettingStarted steps={[
+          { done: profile.business_name !== "My business" && !!profile.business_phone, title: "Add your business name and phone", why: "Customers see them on your request form, so emergencies can call you.", href: "/app/settings", cta: "Open Settings" },
+          { done: jobs.length > 0, title: "Add your first job", why: "Type it in, or paste a text or voicemail and FollowUp fills it in.", href: "/app/jobs/new", cta: "Add a job" },
+          { done: msgs.some((m) => m.channel === "web_form"), title: "Put the request form on your website", why: "Website requests then land here by themselves, with an alert.", href: "/app/settings/connect", cta: "Get the link" },
+          { done: profile.techs.length > 0, title: "Add your technicians", why: "So you can pick who goes when you book a visit.", href: "/app/settings", cta: "Add techs" },
+        ]} />
+      )}
       <AlertsToggle compact />
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -69,6 +79,7 @@ export default async function CallList() {
           <h1 className="display mt-1 text-[32px] leading-tight md:text-[38px]">
             {total === 0 ? "You're all caught up" : `${total} ${total === 1 ? "call" : "calls"} to make today`}
           </h1>
+          <PageHelp>Start with the big <b>Call first</b> card, then work down the list. After each call, open the job and tap what happened (quote sent, they said yes…). If nobody picks up, tap <b>No answer</b>: they come back tomorrow. Red means equipment is down: call those first.</PageHelp>
         </div>
         <Link href="/app/jobs/new" className="btn-brand hidden md:inline-flex">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>

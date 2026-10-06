@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getJob, getProfile, listEvents, messagesForJob, otherJobsFor } from "@/lib/data";
-import { acknowledge, addNote, logCall, moveBack, moveStage, noAnswer, setReminder, setVisitDate, toggleUrgent } from "@/lib/actions/jobs";
+import { acknowledge, addNote, deleteJob, logCall, moveBack, moveStage, noAnswer, setReminder, setVisitDate, toggleUrgent } from "@/lib/actions/jobs";
 import { ago, todayIn } from "@/lib/rules";
 import { FLOW, LOST_REASONS, SOURCE_LABEL, STAGE_LABEL, STAGE_SHORT, isOpen, previousStage } from "@/lib/stages";
 import { dialable } from "@/lib/phone";
@@ -256,6 +256,14 @@ export default async function JobPage({ params, searchParams }: {
           )}
 
           <EditDetails job={job} />
+
+          <details className="self-start text-[13px]">
+            <summary className="cursor-pointer list-none text-muted hover:text-urgent-ink [&::-webkit-details-marker]:hidden">Added by mistake? Delete this job</summary>
+            <form action={deleteJob.bind(null, id)} className="mt-2 flex flex-wrap items-center gap-3 rounded-xl border border-urgent-line bg-urgent-soft px-4 py-3">
+              <span className="text-urgent-ink">This removes the job and its history for good.</span>
+              <Submit className="btn-urgent btn-sm">Yes, delete it</Submit>
+            </form>
+          </details>
         </div>
 
         {/* History: answers "did I send the quote? did they say yes?" */}
