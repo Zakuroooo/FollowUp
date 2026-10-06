@@ -6,9 +6,10 @@ import type { Stage } from "@/lib/types";
 export function LogoMark({ size = 28, dark = true }: { size?: number; dark?: boolean }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <rect width="32" height="32" rx="8" fill={dark ? "#0b0d12" : "#ffffff"} />
-      <path d="M20.13 10.30A7.2 7.2 0 1 1 11.87 10.30" fill="none" stroke={dark ? "#fff" : "#0b0d12"} strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M8.59 9.49L12.36 9.96L11.51 13.66" fill="none" stroke={dark ? "#fff" : "#0b0d12"} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+      <rect width="32" height="32" rx="8" fill="#0a0a0c" />
+      {!dark && <rect x=".5" y=".5" width="31" height="31" rx="7.5" fill="none" stroke="#ffffff" strokeOpacity=".16" />}
+      <path d="M20.13 10.30A7.2 7.2 0 1 1 11.87 10.30" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M8.59 9.49L12.36 9.96L11.51 13.66" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -23,15 +24,15 @@ export function Logo({ light = false }: { light?: boolean }) {
 }
 
 const STAGE_TONE: Record<Stage, string> = {
-  new: "bg-urgent-soft text-urgent-ink",
-  quote: "bg-warn-soft text-warn",
+  new: "bg-ink text-white",
+  quote: "bg-brand text-white",
   awaiting_yes: "bg-brand-soft text-brand",
-  scheduled: "bg-ok-soft text-ok",
+  scheduled: "bg-card text-ink shadow-[inset_0_0_0_1px_var(--line)]",
   done: "bg-subtle text-ink-2",
   lost: "bg-subtle text-muted",
 };
 const STAGE_DOT: Record<Stage, string> = {
-  new: "bg-urgent", quote: "bg-warn", awaiting_yes: "bg-brand", scheduled: "bg-ok", done: "bg-ink-2", lost: "bg-muted",
+  new: "bg-white", quote: "bg-white", awaiting_yes: "bg-brand", scheduled: "bg-ink", done: "bg-muted", lost: "bg-line",
 };
 
 export function StageBadge({ stage }: { stage: Stage }) {
@@ -47,7 +48,7 @@ export function Avatar({ name, hot = false }: { name: string; hot?: boolean }) {
   const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("");
   return (
     <span aria-hidden="true"
-      className={`grid size-9 shrink-0 place-items-center rounded-full text-[13px] font-semibold ${hot ? "bg-urgent-soft text-urgent-ink" : "bg-brand-soft text-brand"}`}>
+      className={`grid size-9 shrink-0 place-items-center rounded-full text-[13px] font-semibold ${hot ? "bg-urgent text-white" : "bg-brand-soft text-brand"}`}>
       {initials || "?"}
     </span>
   );

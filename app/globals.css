@@ -4,28 +4,36 @@
    Calm graphite on near-white, one cold "glacier" blue for the brand,
    red reserved for emergencies, amber for "overdue". */
 :root {
-  --canvas: #f7f8fa;
+  --canvas: #f6f7f9;
+  --navy: #09090b;
+  --navy-2: #1c1c21;
+  --navy-line: #26262c;
+  --navy-muted: #9a9aa6;
   --subtle: #f1f3f6;
   --card: #ffffff;
-  --ink: #0b0d12;
-  --ink-2: #3b4250;
-  --muted: #6e7687;
+  --ink: #0a0a0c;
+  --ink-2: #3c3f48;
+  --muted: #71737d;
   --line: #e6e8ee;
   --line-2: #eef0f4;
-  --brand: #2557e8;
-  --brand-soft: #eef2fe;
+  --brand: #2b5cff;
+  --brand-soft: #edf1ff;
   --urgent: #e5484d;
   --urgent-ink: #c2262e;
   --urgent-soft: #fef0f0;
   --urgent-line: #f8d7d8;
-  --warn: #a15c00;
-  --warn-soft: #fff6e5;
-  --ok: #1d7a4b;
-  --ok-soft: #eaf6ef;
+  --warn: #0a0a0c;
+  --warn-soft: #f1f2f5;
+  --ok: #2b5cff;
+  --ok-soft: #edf1ff;
 }
 
 @theme inline {
   --color-canvas: var(--canvas);
+  --color-navy: var(--navy);
+  --color-navy-2: var(--navy-2);
+  --color-navy-line: var(--navy-line);
+  --color-navy-muted: var(--navy-muted);
   --color-subtle: var(--subtle);
   --color-card: var(--card);
   --color-ink: var(--ink);
@@ -62,8 +70,8 @@
 }
 
 @utility btn { @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors disabled:opacity-50; }
-@utility btn-ink { @apply btn bg-ink text-white hover:bg-[#262a33]; }
-@utility btn-brand { @apply btn bg-brand text-white hover:bg-[#1d47c2]; }
+@utility btn-ink { @apply btn bg-ink text-white hover:bg-[#26262c]; }
+@utility btn-brand { @apply btn bg-brand text-white hover:bg-[#1f4be0]; }
 @utility btn-urgent { @apply btn bg-urgent font-semibold text-white hover:bg-urgent-ink; }
 @utility btn-line { @apply btn border border-line bg-card text-ink hover:bg-subtle; }
 @utility btn-sm { @apply min-h-9 px-3 text-[13px]; }
@@ -73,3 +81,22 @@
 @utility label { @apply mb-1.5 block text-[13px] font-medium text-ink-2; }
 @utility eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-muted; }
 @utility display { @apply font-display font-bold tracking-[-0.03em]; }
+
+@utility btn-pill { @apply rounded-full; }
+
+/* ── Motion: headline words rise in; sections reveal on scroll ── */
+@keyframes rise { from { opacity: 0; transform: translateY(0.35em); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+.word { display: inline-block; opacity: 0; animation: rise .8s cubic-bezier(.2,.7,.2,1) forwards; }
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); }
+.reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .word, .reveal { opacity: 1 !important; transform: none !important; animation: none !important; filter: none !important; }
+}
+
+/* Blue sheen: a soft band of light that slides across a dark card on hover */
+.sheen { position: relative; isolation: isolate; box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+.sheen::after { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(115deg, transparent 30%, rgba(120,155,255,.16) 48%, rgba(190,210,255,.10) 52%, transparent 70%);
+  transform: translateX(-35%); transition: transform 1.4s cubic-bezier(.2,.7,.2,1); }
+.sheen:hover::after { transform: translateX(35%); }
+@media (prefers-reduced-motion: reduce) { .sheen::after { transition: none; } }

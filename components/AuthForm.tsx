@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { logIn, signUp, tryDemo, type AuthState } from "@/lib/actions/auth";
 import { Logo } from "./ui";
-import { CallListIllustration } from "./Illustration";
+import { ParticleField } from "./ParticleField";
 
 export function AuthForm({ mode, next, notice }: { mode: "login" | "signup"; next?: string; notice?: string }) {
   const [state, action, pending] = useActionState<AuthState, FormData>(mode === "login" ? logIn : signUp, {});
@@ -52,13 +52,27 @@ export function AuthForm({ mode, next, notice }: { mode: "login" | "signup"; nex
         </div>
       </main>
 
-      <aside className="relative hidden overflow-hidden border-l border-line bg-card lg:flex lg:flex-col lg:justify-center lg:px-14">
-        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(70%_60%_at_60%_30%,var(--brand-soft),transparent)]" />
-        <div className="relative">
-          <CallListIllustration className="mx-auto w-full max-w-[420px]" />
-          <p className="display mx-auto mt-8 max-w-sm text-center text-2xl leading-snug [text-wrap:balance]">Every request in one place. Every morning, one list.</p>
-          <p className="mx-auto mt-2 max-w-sm text-center text-sm text-muted">Emergencies on top. A reason next to every name.</p>
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-[#050506] p-12 text-white lg:flex">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-[40%] h-[600px] [mask-image:linear-gradient(to_bottom,transparent,#000_25%,#000_70%,transparent)]">
+          <div className="absolute inset-0 bg-[radial-gradient(60%_45%_at_50%_22%,rgba(79,123,255,.45),rgba(43,92,255,.12)_45%,transparent_75%)]" />
+          <ParticleField variant="field" className="absolute inset-0 h-full w-full" />
         </div>
+        <p className="relative text-[13px] text-white/40">For service businesses that run on a phone</p>
+        <div className="relative mx-auto w-full max-w-md">
+          <div className="relative z-10 rounded-2xl border border-white/10 bg-[#0c0c10] p-5 shadow-[0_30px_80px_-20px_rgba(43,92,255,.45)]">
+            <div className="flex items-center gap-2 text-[12px]"><span className="text-white/50">Call first</span><span className="rounded bg-urgent px-1.5 py-0.5 font-medium">Emergency</span></div>
+            <p className="mt-2 text-xl font-semibold">Russo&apos;s Pizzeria</p>
+            <p className="text-sm text-white/60">Walk-in freezer not holding temp, food at risk</p>
+            <div className="mt-4 flex gap-2 text-[13px]">
+              <span className="rounded-full bg-white px-4 py-2 font-medium text-black">Call (614) 555-0142</span>
+              <span className="rounded-full border border-white/15 px-4 py-2">Open job</span>
+            </div>
+          </div>
+          <div className="mx-4 rounded-b-2xl border-x border-b border-white/10 bg-[#0c0c10] px-5 py-3 text-[13px]">
+            <span className="font-medium text-[#9fb6ff]">Follow up</span> <span className="text-white/50">· $2,400 quote · quiet 4 days</span>
+          </div>
+        </div>
+        <p className="relative max-w-sm text-[26px] font-semibold leading-tight tracking-[-0.03em]">Every request in one place. <span className="text-white/40">Every morning, one list.</span></p>
       </aside>
     </div>
   );

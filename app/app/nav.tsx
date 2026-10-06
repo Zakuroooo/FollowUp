@@ -22,11 +22,11 @@ export function NavLinks({ callCount }: { callCount: number }) {
         const on = active(path, i.href);
         return (
           <Link key={i.href} href={i.href} aria-current={on ? "page" : undefined}
-            className={`flex min-h-10 items-center gap-2.5 rounded-lg px-2.5 text-sm ${on ? "bg-subtle font-semibold text-ink" : "text-ink-2 hover:bg-subtle hover:text-ink"}`}>
+            className={`flex min-h-10 items-center gap-2.5 rounded-lg px-2.5 text-sm ${on ? "bg-white/10 font-medium text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,.06)]" : "text-navy-muted hover:bg-white/5 hover:text-white"}`}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={i.icon} /></svg>
             {i.label}
             {i.href === "/app" && callCount > 0 && (
-              <span className="ml-auto rounded-full bg-ink px-2 py-px font-mono text-[11px] text-white">{callCount}</span>
+              <span className="ml-auto rounded-full bg-brand px-2 py-px font-mono text-[11px] text-white">{callCount}</span>
             )}
           </Link>
         );
@@ -43,7 +43,7 @@ export function MobileNav() {
         const on = active(path, i.href);
         return (
           <Link key={i.href} href={i.href} aria-current={on ? "page" : undefined}
-            className={`flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] ${on ? "font-semibold text-ink" : "text-muted"}`}>
+            className={`flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] ${on ? "font-semibold text-brand" : "text-muted"}`}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={i.icon} /></svg>
             {i.short}
           </Link>

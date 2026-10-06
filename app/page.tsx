@@ -1,28 +1,27 @@
 import Link from "next/link";
 import { tryDemo } from "@/lib/actions/auth";
-import { Logo, LogoMark, PhoneIcon } from "@/components/ui";
+import { LogoMark, PhoneIcon } from "@/components/ui";
+import { ParticleField } from "@/components/ParticleField";
+import { Reveal } from "@/components/Reveal";
+import { Journey } from "@/components/Journey";
 
-const PREVIEW = [
-  { hot: true, init: "RP", name: "Russo's Pizzeria", issue: "Walk-in freezer down, food on the line. Owner called twice.", why: "Came in 2 h ago", action: "Call now" },
-  { init: "NC", name: "Northside Cold Storage", issue: "Ice machine leaking, wants a price before Friday.", why: "Asked 3 days ago", action: "Send quote", warn: true },
-  { init: "TW", name: "Turner Warehouse", issue: "Compressor replacement on the main cooler.", why: "$2,400 quote · quiet 4 days", action: "Follow up" },
-  { init: "GS", name: "Grant's Steakhouse", issue: "Reach-in cooler service, two units.", why: "Said yes · no date set", action: "Pick a date" },
+const ROWS = [
+  { name: "Northside Cold Storage", issue: "Quote for second walk-in cooler compressor", action: "Send quote", why: "Asked 3 days ago · overdue" },
+  { name: "Turner Warehouse Co.", issue: "Walk-in cooler refrigerant leak", action: "Follow up", why: "$2,400 quote · quiet 4 days" },
+  { name: "Grant's Steakhouse", issue: "New evaporator fan", action: "Pick a date", why: "Said yes to $960 · no date set" },
 ];
 
-const CHANNELS = [
-  ["Phone call", "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"],
-  ["Text message", "M4 5h16v11H8l-4 4z"],
-  ["Website form", "M4 4h16v16H4zM4 9h16"],
-  ["Referral", "M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20a6 6 0 0 1 12 0M16 11a3 3 0 1 0 0-6M22 20a6 6 0 0 0-4-5.6"],
-  ["The notebook", "M6 3h12v18H6zM9 7h6M9 11h6"],
-];
+const CHANNELS = ["Phone call", "Text message", "Website form", "Referral", "The notebook"];
 
-function DemoButton({ big = false, label = "Try the live demo" }: { big?: boolean; label?: string }) {
+function Arrow() {
+  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8" /></svg>;
+}
+
+function DemoButton({ label = "Open the live demo" }: { label?: string }) {
   return (
     <form action={tryDemo}>
-      <button className={`btn-ink ${big ? "btn-lg" : ""}`}>
-        {label}
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      <button className="inline-flex h-12 items-center gap-2 rounded-full bg-white pl-6 pr-5 text-[15px] font-medium text-black transition hover:bg-white/90">
+        {label} <Arrow />
       </button>
     </form>
   );
@@ -30,141 +29,205 @@ function DemoButton({ big = false, label = "Try the live demo" }: { big?: boolea
 
 export default function Landing() {
   return (
-    <div className="min-h-screen overflow-x-hidden">
-      <header className="sticky top-0 z-20 border-b border-line/70 bg-canvas/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3.5 md:px-8">
-          <Logo />
-          <nav className="flex items-center gap-1 sm:gap-2">
-            <a href="#how" className="hidden min-h-10 items-center px-3 text-sm text-ink-2 hover:text-ink sm:inline-flex">How it works</a>
-            <Link href="/login" className="inline-flex min-h-10 items-center px-3 text-sm text-ink-2 hover:text-ink">Log in</Link>
-            <form action={tryDemo}><button className="btn-ink btn-sm">Try the demo</button></form>
+    <div className="min-h-screen overflow-x-hidden bg-[#050506] text-white">
+      <header className="absolute inset-x-0 top-0 z-20">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-5 md:px-8">
+          <Link href="/" className="inline-flex items-center gap-2.5" aria-label="FollowUp home">
+            <LogoMark dark={false} />
+            <span className="text-[17px] font-semibold tracking-[-0.02em]">FollowUp</span>
+          </Link>
+          <nav className="flex items-center gap-1 text-sm">
+            <a href="#how" className="hidden rounded-full px-4 py-2 text-white/60 hover:text-white sm:inline-flex">How it works</a>
+            <Link href="/login" className="rounded-full px-4 py-2 text-white/60 hover:text-white">Log in</Link>
+            <form action={tryDemo}><button className="rounded-full border border-white/15 px-4 py-2 font-medium hover:bg-white/10">Try the demo</button></form>
           </nav>
         </div>
       </header>
 
       {/* HERO */}
-      <section className="relative">
-        <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-14 md:px-8 md:pt-24">
-          <h1 className="display max-w-3xl text-[44px] leading-[1.02] [text-wrap:balance] md:text-[68px]">
-            Wake up knowing exactly who to call.
+      <section className="relative pt-36 md:pt-44">
+        <div className="relative z-10 mx-auto max-w-4xl px-5 text-center">
+          <h1 className="text-[46px] font-semibold leading-[0.98] tracking-[-0.045em] [text-wrap:balance] md:text-[84px]" aria-label="Wake up knowing exactly who to call.">
+            {"Wake up knowing exactly who to call.".split(" ").map((w, i) => (
+              <span key={i} aria-hidden="true" className="word" style={{ animationDelay: `${120 + i * 70}ms` }}>{w}&nbsp;</span>
+            ))}
           </h1>
-          <div className="mt-6 grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
-            <p className="max-w-xl text-lg leading-relaxed text-ink-2">
-              Calls, texts, web forms and the notebook land in one place. Every morning FollowUp gives you one list of who to call and why, so a $2,000 job never slips away again.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <DemoButton big label="Open the live demo" />
-              <Link href="/signup" className="btn-line btn-lg">Create an account</Link>
-            </div>
+          <p className="mx-auto mt-6 max-w-xl text-[17px] leading-relaxed text-white/60 [text-wrap:balance] md:text-lg">
+            Every job request from calls, texts, the website and the notebook, in one place. Every morning, one list of who to call and why.
+          </p>
+          <div className="mt-9 flex flex-wrap justify-center gap-3">
+            <DemoButton />
+            <Link href="/signup" className="inline-flex h-12 items-center rounded-full border border-white/15 px-6 text-[15px] font-medium hover:bg-white/10">Create an account</Link>
           </div>
+          <p className="mt-4 text-[13px] text-white/40">No signup for the demo. You get a private copy with a week of real-looking jobs.</p>
+        </div>
 
-          {/* Product shot — real markup, not a screenshot */}
-          <div className="relative mt-14">
-            <div className="rounded-2xl border border-line bg-card p-1.5 shadow-[0_40px_80px_-40px_rgba(11,13,18,0.35),0_0_0_1px_rgba(11,13,18,0.02)]">
-              <div className="flex items-center gap-1.5 px-3 py-2">
-                <span className="size-2.5 rounded-full bg-line" /><span className="size-2.5 rounded-full bg-line" /><span className="size-2.5 rounded-full bg-line" />
-                <span className="ml-3 rounded-md bg-subtle px-3 py-0.5 font-mono text-[11px] text-muted">followup / call list</span>
-              </div>
-              <div className="rounded-xl border border-line-2 bg-canvas p-4 md:p-6">
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <p className="text-[12px] text-muted">Tuesday, October 6</p>
-                    <p className="display text-2xl">Call list</p>
-                  </div>
-                  <p className="font-mono text-[12px] text-muted">4 people to call</p>
-                </div>
-                <ul className="mt-4 divide-y divide-line-2 overflow-hidden rounded-xl border border-line bg-card">
-                  {PREVIEW.map((p) => (
-                    <li key={p.name} className={`flex items-center gap-4 py-3.5 pl-5 pr-4 ${p.hot ? "shadow-[inset_3px_0_0_var(--urgent)]" : ""}`}>
-                      <div className="min-w-0 flex-1">
-                        <div className="font-semibold">{p.name}</div>
-                        <div className="text-sm text-ink-2">{p.issue}</div>
-                        <div className="mt-1 text-[12px] text-muted">
-                          <span className={`font-medium ${p.hot ? "text-urgent-ink" : "text-ink"}`}>{p.action}</span> · {p.why}
-                        </div>
-                      </div>
-                      <span className={`grid size-9 shrink-0 place-items-center rounded-full ${p.hot ? "bg-urgent text-white" : "text-ink-2"}`}><PhoneIcon size={15} /></span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+        {/* light field + the product rising out of it */}
+        <div className="relative mt-10 md:mt-6">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -top-24 h-[520px] [mask-image:linear-gradient(to_bottom,transparent,#000_25%,#000_70%,transparent)] md:h-[640px]">
+            <div className="absolute inset-0 bg-[radial-gradient(55%_45%_at_50%_22%,rgba(79,123,255,.5),rgba(43,92,255,.14)_45%,transparent_75%)]" />
+            <ParticleField variant="field" className="absolute inset-0 h-full w-full" />
           </div>
+          <div className="relative z-10 mx-auto max-w-5xl px-4 pt-40 md:px-8 md:pt-56">
+            <ProductShot />
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-b from-transparent to-[#050506]" />
         </div>
       </section>
 
-      {/* CHANNELS → ONE LIST */}
-      <section id="how" className="border-y border-line bg-card">
-        <div className="mx-auto grid max-w-6xl gap-12 px-5 py-20 md:grid-cols-2 md:items-center md:px-8">
-          <div>
-            <h2 className="display text-[34px] leading-tight md:text-[44px] [text-wrap:balance]">Five places to look. One forgotten callback.</h2>
-            <p className="mt-4 max-w-lg leading-relaxed text-ink-2">
-              Requests arrive by phone, text, the website, referrals and a paper notebook. Nobody can hold all of that in their head, so a restaurant with a dead freezer calls someone else.
-            </p>
-          </div>
-          <div className="flex items-center gap-4 md:gap-6" aria-label="Five channels flow into one list">
-            <ul className="flex flex-1 flex-col gap-2">
-              {CHANNELS.map(([label, d]) => (
-                <li key={label} className="flex items-center gap-2.5 rounded-lg border border-line bg-canvas px-3 py-2 text-sm">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-muted" aria-hidden="true"><path d={d} /></svg>
-                  {label}
-                </li>
-              ))}
-            </ul>
-            <svg width="56" height="200" viewBox="0 0 56 200" fill="none" aria-hidden="true" className="shrink-0">
-              {[20, 60, 100, 140, 180].map((y) => <path key={y} d={`M0 ${y} C 30 ${y}, 26 100, 56 100`} stroke="var(--line)" strokeWidth="1.5" />)}
-              <circle cx="52" cy="100" r="4" fill="var(--brand)" />
-            </svg>
-            <div className="flex w-36 shrink-0 flex-col items-center gap-2 rounded-2xl bg-ink px-4 py-6 text-center text-white md:w-44">
-              <LogoMark size={36} dark={false} />
-              <p className="text-sm font-semibold">One call list</p>
-              <p className="text-[12px] text-white/60">every morning</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* THREE THINGS */}
-      <section className="mx-auto max-w-6xl px-5 py-20 md:px-8">
-        <h2 className="display max-w-2xl text-[34px] leading-tight md:text-[44px] [text-wrap:balance]">Three things, done properly. Nothing fancy.</h2>
-        <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3">
+      {/* HER NUMBERS, from the call */}
+      <section className="relative z-10 mx-auto max-w-6xl px-5 py-20 md:px-8">
+        <Reveal><dl className="grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-3">
           {[
-            ["Write it down in 15 seconds", "Name, phone, what's broken. Words like “freezer down” or “food spoiling” flag it as an emergency automatically. Same phone twice? It warns you."],
-            ["Who to call today, and why", "New requests, quotes not sent, quotes with no reply in two days, yeses with no date. Emergencies always on top, each with a reason."],
-            ["Where every job stands", "Waiting on quote, waiting on their yes, scheduled, done. One tap moves a job forward, and every step is kept in its history."],
-          ].map(([t, d]) => (
-            <div key={t} className="bg-card p-7">
-              <h3 className="text-lg font-semibold">{t}</h3>
-              <p className="mt-2 leading-relaxed text-ink-2">{d}</p>
+            ["5", "places a request can arrive"],
+            ["15–20", "requests every week"],
+            ["$2,000", "job lost to one forgotten follow-up"],
+          ].map(([n, l]) => (
+            <div key={l} className="bg-[#050506] px-7 py-8">
+              <dt className="sr-only">{l}</dt>
+              <dd className="text-[40px] font-semibold tracking-[-0.03em] md:text-[48px]">{n}</dd>
+              <p className="mt-1 text-white/50">{l}</p>
             </div>
           ))}
-        </div>
+        </dl></Reveal>
+      </section>
+
+      {/* HOW */}
+      <section id="how" className="mx-auto max-w-6xl px-5 pb-24 md:px-8">
+        <Reveal><h2 className="max-w-2xl text-[34px] font-semibold leading-[1.05] tracking-[-0.035em] [text-wrap:balance] md:text-[52px]">
+          Five places to look. <span className="text-white/40">One list to read.</span>
+        </h2></Reveal>
+
+        <Reveal delay={120}><div className="mt-12 grid gap-4 md:grid-cols-3">
+          <Bento title="Write it down in 15 seconds" body="Name, phone, what's broken. “Freezer down” or “food spoiling” flags an emergency on its own. The same phone twice gets a warning.">
+            <div className="flex flex-col gap-2">
+              {CHANNELS.map((c, i) => (
+                <div key={c} className={`flex items-center justify-between rounded-lg border px-3 py-2 text-[13px] ${i === 0 ? "border-brand/50 bg-brand/15 text-white" : "border-white/10 text-white/50"}`}>
+                  {c}{i === 0 && <span className="text-[11px] text-[#9fb6ff]">new job</span>}
+                </div>
+              ))}
+            </div>
+          </Bento>
+
+          <Bento title="Who to call today, and why" body="New requests, quotes not sent, quotes quiet for two days, yeses with no date. Emergencies always on top, each with a reason." featured>
+            <div className="rounded-xl border border-white/10 bg-black/40 p-4">
+              <p className="text-[11px] text-white/50">Call first</p>
+              <p className="mt-1 font-semibold">Russo&apos;s Pizzeria</p>
+              <p className="text-[13px] text-white/60">Walk-in freezer not holding temp</p>
+              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-urgent px-3 py-1.5 text-[12px] font-medium"><PhoneIcon size={12} /> Call now</div>
+            </div>
+            <div className="mt-2 rounded-xl border border-white/10 px-4 py-3 text-[13px]">
+              <span className="font-medium text-[#9fb6ff]">Follow up</span> <span className="text-white/50">· $2,400 quote · quiet 4 days</span>
+            </div>
+          </Bento>
+
+          <Bento title="Where every job stands" body="Waiting on quote, waiting on their yes, scheduled, done. One tap moves a job forward and every step lands in its history.">
+            <div className="flex flex-col gap-3">
+              {([["New", 2, "bg-white"], ["Quote", 3, "bg-brand"], ["Their yes", 3, "bg-brand/60"], ["Scheduled", 2, "bg-white/30"]] as const).map(([l, n, c]) => (
+                <div key={l}>
+                  <div className="flex justify-between text-[13px]"><span className="text-white/60">{l}</span><span className="font-mono">{n}</span></div>
+                  <div className="mt-1.5 h-1.5 rounded-full bg-white/10"><div className={`h-full rounded-full ${c}`} style={{ width: `${(n / 3) * 100}%` }} /></div>
+                </div>
+              ))}
+            </div>
+          </Bento>
+        </div></Reveal>
+      </section>
+
+      {/* JOURNEY */}
+      <section className="mx-auto max-w-6xl px-5 pb-28 md:px-8">
+        <Reveal>
+          <h2 className="max-w-2xl text-[34px] font-semibold leading-[1.05] tracking-[-0.035em] [text-wrap:balance] md:text-[52px]">
+            From first call to done. <span className="text-white/40">Nothing falls off the route.</span>
+          </h2>
+          <p className="mt-4 max-w-xl text-white/55">Every job walks the same five stops Denise already uses. FollowUp watches the gaps between them and puts the job back on your list when it stalls.</p>
+        </Reveal>
+        <Reveal delay={150} className="mt-12 rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-8 md:px-8">
+          <Journey />
+        </Reveal>
       </section>
 
       {/* QUOTE */}
-      <section className="mx-auto max-w-6xl px-5 md:px-8">
-        <figure className="rounded-3xl bg-ink px-7 py-14 text-white md:px-16 md:py-20">
-          <svg width="32" height="24" viewBox="0 0 32 24" fill="var(--brand)" aria-hidden="true"><path d="M0 24V14C0 6 4 1 12 0l1 4c-4 1-6 4-6 8h6v12zm18 0V14c0-8 4-13 12-14l1 4c-4 1-6 4-6 8h6v12z" /></svg>
-          <blockquote className="display mt-6 max-w-4xl text-[26px] leading-snug md:text-[36px] [text-wrap:balance]">
-            I just want to wake up and know who I need to call today. Waiting on quote, waiting on their yes, scheduled, done. I don&apos;t need anything fancy.
+      <section className="border-y border-white/10">
+        <Reveal><figure className="mx-auto max-w-5xl px-5 py-24 md:px-8 md:py-32">
+          <blockquote className="text-[28px] font-medium leading-[1.2] tracking-[-0.03em] [text-wrap:balance] md:text-[46px]">
+            <span className="text-brand">“</span>I just want to wake up and know who I need to call today. Waiting on quote, waiting on their yes, scheduled, done.<span className="text-white/40"> I don&apos;t need anything fancy.</span><span className="text-brand">”</span>
           </blockquote>
-          <figcaption className="mt-6 text-sm text-white/60">Denise, owner of a commercial refrigeration repair company with 4 technicians</figcaption>
-        </figure>
+          <figcaption className="mt-8 flex items-center gap-3 text-sm text-white/50">
+            <span className="grid size-9 place-items-center rounded-full bg-white/10 font-medium text-white">D</span>
+            Denise, owner of a commercial refrigeration repair company with 4 technicians
+          </figcaption>
+        </figure></Reveal>
       </section>
 
       {/* CTA */}
-      <section className="mx-auto max-w-6xl px-5 py-24 text-center md:px-8">
-        <h2 className="display text-[34px] md:text-[48px] [text-wrap:balance]">See tomorrow&apos;s call list today.</h2>
-        <p className="mx-auto mt-4 max-w-xl text-lg text-ink-2">A realistic week of refrigeration jobs, ready to click through. Your copy is private.</p>
-        <div className="mt-8 flex justify-center"><DemoButton big /></div>
+      <section className="relative overflow-hidden">
+        <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-full size-[900px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-brand/40 blur-[140px]" />
+        <div className="relative mx-auto max-w-4xl px-5 py-28 text-center md:py-36">
+          <h2 className="text-[38px] font-semibold leading-[1] tracking-[-0.04em] [text-wrap:balance] md:text-[64px]">See tomorrow&apos;s call list today.</h2>
+          <p className="mx-auto mt-5 max-w-lg text-white/60">A realistic week of refrigeration jobs, ready to click through. Your copy is private.</p>
+          <div className="mt-9 flex justify-center"><DemoButton label="Try the live demo" /></div>
+        </div>
       </section>
 
-      <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-[13px] text-muted md:px-8">
-          <span className="inline-flex items-center gap-2"><LogoMark size={20} /> FollowUp, a prototype built for a refrigeration repair shop</span>
+      <footer className="relative overflow-hidden border-t border-white/10">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-7 text-[13px] text-white/40 md:px-8">
+          <span className="inline-flex items-center gap-2"><LogoMark size={20} dark={false} /> FollowUp, a prototype for a refrigeration repair shop</span>
           <span>Built with Claude Code</span>
         </div>
+        <p aria-hidden="true" className="pointer-events-none -mb-[3.5vw] select-none text-center text-[21vw] font-semibold leading-[0.8] tracking-[-0.06em] bg-gradient-to-b from-white/[0.09] to-transparent bg-clip-text text-transparent">FollowUp</p>
       </footer>
+    </div>
+  );
+}
+
+function Bento({ title, body, children, featured = false }: { title: string; body: string; children: React.ReactNode; featured?: boolean }) {
+  return (
+    <div className={`relative flex flex-col overflow-hidden rounded-2xl border p-6 ${featured ? "border-brand/40 bg-[linear-gradient(180deg,rgba(43,92,255,.18),rgba(43,92,255,.02))]" : "border-white/10 bg-white/[0.03]"}`}>
+      <div className="min-h-[200px] flex-1">{children}</div>
+      <h3 className="mt-8 text-lg font-semibold tracking-[-0.01em]">{title}</h3>
+      <p className="mt-2 text-[15px] leading-relaxed text-white/55">{body}</p>
+    </div>
+  );
+}
+
+/** The real app, drawn in markup: black sidebar, light content, the Next-call card. */
+function ProductShot() {
+  return (
+    <div className="rounded-[20px] border border-white/15 bg-white/[0.06] p-2 shadow-[0_0_0_1px_rgba(255,255,255,.04),0_-20px_80px_-20px_rgba(43,92,255,.55)] backdrop-blur">
+      <div className="flex overflow-hidden rounded-[14px] bg-[#f6f7f9] text-ink">
+        <div className="hidden w-44 shrink-0 flex-col gap-1 bg-[linear-gradient(180deg,#09090b_0%,#0a0d1c_55%,#0c1636_100%)] p-3 text-[12px] text-white/60 sm:flex">
+          <div className="mb-4 flex items-center gap-2 px-1 text-[13px] font-semibold text-white"><LogoMark size={20} dark={false} />FollowUp</div>
+          <div className="flex items-center justify-between rounded-md bg-white/10 px-2 py-1.5 text-white">Call list <span className="rounded-full bg-brand px-1.5 font-mono text-[10px]">8</span></div>
+          <div className="px-2 py-1.5">All jobs</div>
+          <div className="px-2 py-1.5">Add a job</div>
+        </div>
+        <div className="min-w-0 flex-1 p-4 md:p-6">
+          <p className="text-[11px] font-medium text-brand">Tuesday, October 6</p>
+          <p className="text-[22px] font-semibold tracking-[-0.03em]">8 calls to make today</p>
+          <div className="relative mt-4 overflow-hidden rounded-xl bg-[linear-gradient(120deg,#09090b_0%,#0a0d1c_50%,#0f1c45_100%)] p-4 text-white md:p-5">
+            <div aria-hidden="true" className="absolute -bottom-24 -right-16 size-64 rounded-full bg-brand/40 blur-3xl" />
+            <div className="relative">
+              <div className="flex items-center gap-2 text-[11px]"><span className="text-white/50">Call first</span><span className="rounded bg-urgent px-1.5 py-0.5 font-medium">Emergency</span></div>
+              <p className="mt-2 text-lg font-semibold">Russo&apos;s Pizzeria</p>
+              <p className="text-[13px] text-white/70">Walk-in freezer not holding temp, food at risk</p>
+              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-urgent px-3.5 py-1.5 text-[12px] font-medium"><PhoneIcon size={12} /> Call (614) 555-0142</div>
+            </div>
+          </div>
+          <ul className="mt-3 divide-y divide-line-2 overflow-hidden rounded-xl border border-line bg-white">
+            {ROWS.map((r) => (
+              <li key={r.name} className="flex items-center gap-3 px-4 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-semibold">{r.name}</p>
+                  <p className="truncate text-[12px] text-ink-2">{r.issue}</p>
+                </div>
+                <p className="hidden text-[11px] text-muted md:block"><span className="font-medium text-brand">{r.action}</span> · {r.why}</p>
+                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-brand-soft text-brand"><PhoneIcon size={12} /></span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
