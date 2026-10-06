@@ -22,7 +22,7 @@ export function alertEmail(to: string, job: Job, replyTo?: string): Mail & { fro
   const subject = job.urgent ? `EMERGENCY: ${who}, ${job.issue ?? "equipment down"}` : `New request: ${who}`;
   const link = `${env().APP_URL}/app/jobs/${job.id}`;
   const html = wrap(`
-${job.urgent ? `<div style="background:#b4232f;color:#fff;border-radius:10px;padding:14px 16px;margin:-6px -6px 18px;font-weight:700;font-size:15px;letter-spacing:.02em">&#9888; EQUIPMENT DOWN &middot; CALL NOW<div style="font-weight:400;font-size:13px;opacity:.85;margin-top:2px">FollowUp will remind you every 3 minutes until someone acts on it.</div></div>` : ""}
+${job.urgent ? `<div style="background:#111218;border-left:4px solid #b4232f;color:#fff;border-radius:10px;padding:14px 16px;margin:0 0 18px"><div style="font-size:12px;font-weight:700;letter-spacing:.06em;color:#ff8a92">EMERGENCY</div><div style="font-size:15px;font-weight:600;margin-top:2px">Equipment is down. Call them now.</div><div style="font-size:13px;color:#a8acb8;margin-top:4px">You'll be reminded every 3 minutes until someone acts on it.</div></div>` : ""}
 <h1 style="font-size:22px;margin:0 0 4px">${esc(who)}</h1>
 <p style="margin:0 0 16px;color:#3c3f48">${esc(job.customer_name)} · ${tel(job.phone)}</p>
 <p style="font-size:16px;line-height:1.5;margin:0 0 20px">${esc(job.issue)}</p>

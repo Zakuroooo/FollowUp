@@ -57,16 +57,16 @@ Denise runs a commercial refrigeration repair company: 4 technicians, 15–20 ne
 ## See the automation in 60 seconds
 
 1. Open the [live app](https://followup-indol-seven.vercel.app) → **Try the demo** (a private copy with sample jobs, no signup).
-2. Go to **Automations** → press **Send it** on "A customer texts". The message is read by AI, flagged as an emergency, matched to a customer, saved with their own words, and an alert fires (sound in the app, a push notification if alerts are on).
+2. Go to **Try it** → press **Send** on "A customer texts". The message is read by AI, flagged as an emergency, matched to a customer, saved with their own words, and an alert fires (sound in the app, a push notification if alerts are on).
 3. Back on the **Call list**, it's on top, with a dark emergency bar that re-alerts every 3 minutes until you press **I'm on it**.
-4. Scroll **Automations** to see the real **emergency email** and the **7 AM call-list email** FollowUp sends.
+4. On **Try it**, open "See the emails Denise gets" for the real **emergency email** and the **7 AM call-list email** FollowUp sends.
 
 ## What it does
 
 | Screen | For Denise |
 |---|---|
 | **Call list** | Who to call today and why, emergencies first, an AI "today" brief, one-tap *No answer → tomorrow*, *Coming up*, time to call back |
-| **Automations** | Everything that happens by itself, with a way to watch each one |
+| **Try it** | Pretend to be a customer and watch a request arrive by itself |
 | **Inbox** | Every call, text, email and website request in the customer's own words |
 | **Job page** | Call / text, the next step as one question, what the customer said, AI-drafted follow-up, history with dates |
 | **All jobs · Schedule · Numbers** | Stages, visits by day / window / technician, money and why jobs were lost |

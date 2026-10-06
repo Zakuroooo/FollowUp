@@ -6,7 +6,7 @@ const ITEMS = [
   { href: "/app", label: "Call list", short: "Calls", icon: "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" },
   { href: "/app/jobs", label: "All jobs", short: "Jobs", icon: "M4 6h16M4 12h16M4 18h10" },
   { href: "/app/inbox", label: "Inbox", short: "Inbox", icon: "M4 13h4l2 3h4l2-3h4M4 13l2.5-7h11l2.5 7v6H4z" },
-  { href: "/app/automations", label: "Automations", short: "Auto", icon: "M13 3L4 14h7l-1 7 9-11h-7z" },
+  { href: "/app/automations", label: "Try it", short: "Try it", icon: "M13 3L4 14h7l-1 7 9-11h-7z" },
   { href: "/app/schedule", label: "Schedule", short: "Schedule", icon: "M5 5h14v15H5zM5 10h14M9 3v4M15 3v4", desktopOnly: true },
   { href: "/app/numbers", label: "Numbers", short: "Numbers", icon: "M5 20V10M12 20V4M19 20v-7", desktopOnly: true },
   { href: "/app/jobs/new", label: "Add a job", short: "Add", icon: "M12 5v14M5 12h14" },

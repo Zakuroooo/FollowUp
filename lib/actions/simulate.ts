@@ -77,5 +77,5 @@ export async function quickSimulate(kind: keyof typeof QUICK): Promise<SimState>
     subject: q.door === "email" ? "Request for quote" : null,
   });
   revalidatePath("/app", "layout");
-  return { ok: r.urgent ? "Arrived as an EMERGENCY: alert sent, it's on top of your call list." : "Arrived: it's a new job on your call list.", jobId: r.jobId };
+  return { ok: r.urgent ? "It arrived as an emergency, and Denise was alerted." : "It arrived as a new job on the call list.", jobId: r.jobId };
 }
