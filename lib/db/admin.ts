@@ -5,9 +5,11 @@
  */
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
+import { env } from "@/lib/env";
 
 export function admin() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+  const e = env();
+  return createClient(e.NEXT_PUBLIC_SUPABASE_URL, e.SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
