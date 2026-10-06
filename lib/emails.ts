@@ -50,3 +50,19 @@ ${rows || `<p style="color:#3c3f48">Every open job is waiting on the customer, n
   const text = `${subject}\n\n` + groups.map((g) => `${g.title}\n` + g.items.map((i) => `- ${i.job.business ?? i.job.customer_name} ${i.job.phone ?? ""}: ${i.action} (${i.reason})`).join("\n")).join("\n\n") + `\n\n${link}`;
   return { to, subject, html, text };
 }
+
+export function weekendEmail(to: string, onList: number, comingDue: { job: Job; due: string; why: string }[]): Mail {
+  const link = `${env().APP_URL}/app`;
+  const total = onList + comingDue.length;
+  const subject = `Before the weekend: ${total} ${total === 1 ? "job" : "jobs"} still waiting on you`;
+  const rows = comingDue.map(({ job, why }) => `<div style="border-top:1px solid #eef0f4;padding:10px 0">
+<div style="font-weight:600">${esc(job.business ?? job.customer_name)} <span style="font-weight:400;color:#71737d">· ${tel(job.phone)}</span></div>
+<div style="font-size:13px;color:#71737d">${esc(why)} · would wait until Monday</div></div>`).join("");
+  const html = wrap(`<p style="margin:0;color:#2b5cff;font-size:13px;font-weight:600">Friday, 3 PM</p>
+<h1 style="font-size:22px;margin:4px 0 8px">${esc(subject)}</h1>
+<p style="margin:0 0 8px;color:#3c3f48">${onList ? `${onList} ${onList === 1 ? "call is" : "calls are"} still on today's list.` : "Today's list is clear."} A request left over the weekend is usually gone by Monday.</p>
+${rows}
+<div style="margin-top:20px">${button(link, "Open the call list")}</div>`);
+  const text = `${subject}\n\n${onList} still on today's list.\n` + comingDue.map((u) => `- ${u.job.business ?? u.job.customer_name} ${u.job.phone ?? ""}: ${u.why}`).join("\n") + `\n\n${link}`;
+  return { to, subject, html, text };
+}

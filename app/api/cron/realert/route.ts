@@ -1,13 +1,17 @@
 /**
  * Every 3 minutes (Supabase pg_cron → here): re-alert emergencies nobody has acted on yet.
+ * Also, on Fridays from 3 PM shop time: the once-a-week "before the weekend" check.
  * Auth: a token generated inside the database (app_secrets), or CRON_SECRET for manual runs.
  */
 import { timingSafeEqual } from "node:crypto";
 import { admin } from "@/lib/db/admin";
 import { env } from "@/lib/env";
-import { dueForRealert, REALERT_MAX } from "@/lib/rules";
+import { beforeWeekend, dueForRealert, isFriday, REALERT_MAX, todayIn, WEEKEND_CHECK_HOUR } from "@/lib/rules";
+import { localHour } from "@/lib/digest";
+import { sendEmail } from "@/lib/email";
+import { weekendEmail } from "@/lib/emails";
 import { sendPushTo } from "@/lib/push";
-import type { Job } from "@/lib/types";
+import type { Job, Profile } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +39,32 @@ async function run(req: Request) {
     });
     await db.from("jobs").update({ alert_count: j.alert_count + 1, last_alert_at: now.toISOString() }).eq("id", j.id);
   }
-  return Response.json({ realerted: due.length });
+  const weekend = await weekendCheck(now);
+  return Response.json({ realerted: due.length, weekend });
+}
+
+/** Friday, 3 PM local: one push + email per business listing what would otherwise wait until Monday. */
+async function weekendCheck(now: Date) {
+  const db = admin();
+  const { data: profiles } = await db.from("profiles").select("*").eq("digest_enabled", true).eq("is_guest", false);
+  let sent = 0;
+  for (const p of (profiles ?? []) as Profile[]) {
+    const today = todayIn(p.timezone, now);
+    if (!isFriday(today) || localHour(p.timezone, now) < WEEKEND_CHECK_HOUR || p.weekend_sent_on === today) continue;
+    // Claim this Friday first, in one statement, so overlapping runs can't double-send.
+    const { data: claimed } = await db.from("profiles").update({ weekend_sent_on: today })
+      .eq("id", p.id).or(`weekend_sent_on.is.null,weekend_sent_on.neq.${today}`).select("id");
+    if (!claimed?.length) continue;
+    const { data: rows } = await db.from("jobs").select("*").eq("owner_id", p.id);
+    const { onList, comingDue, total } = beforeWeekend((rows ?? []) as Job[], now, today, p.timezone);
+    if (!total) continue; // nothing waiting: stay quiet
+    await Promise.all([
+      sendPushTo(p.id, { title: `Before the weekend: ${total} ${total === 1 ? "job" : "jobs"} waiting on you`, body: "Call them today, or they wait until Monday. Tap to open the list.", url: "/app", tag: "weekend" }),
+      p.digest_email ? sendEmail(weekendEmail(p.digest_email, onList, comingDue)) : null,
+    ]);
+    sent++;
+  }
+  return sent;
 }
 
 export const POST = run;

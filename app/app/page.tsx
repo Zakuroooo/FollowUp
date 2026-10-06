@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { listJobs, getProfile } from "@/lib/data";
-import { callList, callbackTime, comingUp, summary, todayIn, type CallItem } from "@/lib/rules";
+import { beforeWeekend, callList, callbackTime, comingUp, summary, todayIn, type CallItem } from "@/lib/rules";
 import { dialable } from "@/lib/phone";
 import { loadDemoJobs, noAnswer } from "@/lib/actions/jobs";
 import { Submit } from "@/components/Submit";
@@ -34,6 +34,7 @@ export default async function CallList() {
   const s = summary(jobs, now);
   const upcoming = comingUp(jobs, now, today, tz);
   const cb = callbackTime(jobs, now);
+  const weekend = beforeWeekend(jobs, now, today, tz);
   const dueLabel = (d: string) => {
     const t = new Date(`${today}T12:00:00Z`); t.setUTCDate(t.getUTCDate() + 1);
     if (d === t.toISOString().slice(0, 10)) return "Tomorrow";
@@ -95,6 +96,17 @@ export default async function CallList() {
           Add a job
         </Link>
       </header>
+
+      {weekend.total > 0 && (
+        <section aria-label="Before the weekend" className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-brand/25 bg-brand/[0.05] px-5 py-4">
+          <p className="text-[15px] font-semibold">It&apos;s Friday. Clear these before the weekend.</p>
+          <p className="text-sm text-ink-2">
+            {weekend.onList > 0 && <>{weekend.onList} still on today&apos;s list</>}
+            {weekend.onList > 0 && weekend.comingDue.length > 0 && " · "}
+            {weekend.comingDue.length > 0 && <>{weekend.comingDue.length} would otherwise wait until Monday ({weekend.comingDue.slice(0, 3).map((u) => u.job.business ?? u.job.customer_name).join(", ")}{weekend.comingDue.length > 3 ? "…" : ""})</>}
+          </p>
+        </section>
+      )}
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">

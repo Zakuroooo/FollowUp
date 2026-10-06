@@ -198,3 +198,23 @@ export function dueForRealert(jobs: Job[], now: Date): Job[] {
     j.alert_count < REALERT_MAX &&
     (!j.last_alert_at || now.getTime() - new Date(j.last_alert_at).getTime() >= (REALERT_EVERY_MIN * 60 - 10) * 1000));
 }
+
+/**
+ * FRIDAY CHECK — the lost $2,000 job was a Friday call nobody returned until Monday.
+ * On Fridays, these are the open jobs that would otherwise sit untouched over the weekend:
+ * everything still on today's list, plus follow-ups that come due Saturday, Sunday or Monday.
+ * Empty on every other day.
+ */
+export const WEEKEND_CHECK_HOUR = 15; // 3 PM, shop time
+
+export function isFriday(today: string) {
+  return new Date(`${today}T12:00:00Z`).getUTCDay() === 5;
+}
+
+export function beforeWeekend(jobs: Job[], now: Date, today: string, timeZone: string) {
+  if (!isFriday(today)) return { onList: 0, comingDue: [] as UpcomingItem[], total: 0 };
+  const onList = callList(jobs, now, today).total;
+  const monday = addDays(today, 3);
+  const comingDue = comingUp(jobs, now, today, timeZone).filter((u) => u.why !== "Visit booked" && u.due <= monday);
+  return { onList, comingDue, total: onList + comingDue.length };
+}
