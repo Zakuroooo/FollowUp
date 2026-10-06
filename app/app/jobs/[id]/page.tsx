@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 import { getJob, getProfile, listEvents, messagesForJob, otherJobsFor } from "@/lib/data";
 import { acknowledge, addNote, logCall, moveBack, moveStage, noAnswer, setReminder, setVisitDate, toggleUrgent } from "@/lib/actions/jobs";
-import { ago } from "@/lib/rules";
+import { ago, todayIn } from "@/lib/rules";
 import { FLOW, LOST_REASONS, SOURCE_LABEL, STAGE_LABEL, STAGE_SHORT, isOpen, previousStage } from "@/lib/stages";
 import { dialable } from "@/lib/phone";
 import { Submit } from "@/components/Submit";
 import { Sparkles } from "@/components/Sparkles";
 import { DraftMessage } from "@/components/DraftMessage";
+import { DatePicker, WindowPicker } from "@/components/DatePicker";
 import { EditDetails } from "@/components/EditDetails";
 import Link from "next/link";
 import { BackLink, PhoneIcon, money } from "@/components/ui";
@@ -33,6 +34,7 @@ export default async function JobPage({ params, searchParams }: {
   if (!job) notFound();
   const [events, others, said, profile] = await Promise.all([listEvents(id), otherJobsFor(job), messagesForJob(id), getProfile()]);
   const techs = profile?.techs ?? [];
+  const today = todayIn(profile?.timezone ?? "America/New_York", new Date());
   const TechPick = ({ id: fid }: { id: string }) => techs.length ? (
     <div className="w-44">
       <label className="label" htmlFor={fid}>Tech</label>
@@ -52,7 +54,7 @@ export default async function JobPage({ params, searchParams }: {
 
   const facts: [string, string][] = [
     ["Quote", job.quote_amount !== null ? money(job.quote_amount) : "Not sent"],
-    ["Visit", job.scheduled_for ? fmtDate(job.scheduled_for) : "Not set"],
+    ["Visit", job.scheduled_for ? `${fmtDate(job.scheduled_for)}${job.visit_window ? `, ${job.visit_window}` : ""}` : "Not set"],
     ["Tech", job.tech ?? "Not assigned"],
     ["Reminder", job.follow_up_on ? fmtDate(job.follow_up_on) : "None"],
     ["Came in", `${ago(job.created_at, now)} by ${SOURCE_LABEL[job.source].toLowerCase()}`],
@@ -149,9 +151,10 @@ export default async function JobPage({ params, searchParams }: {
                   <form action={moveStage.bind(null, id, "scheduled")} className="flex flex-wrap items-end gap-3">
                     <div className="w-52">
                       <label className="label" htmlFor="scheduled_for">Visit date (optional)</label>
-                      <input id="scheduled_for" name="scheduled_for" type="date" className="field" />
+                      <DatePicker id="scheduled_for" name="scheduled_for" today={today} placeholder="Pick later" />
                     </div>
                     <TechPick id="tech_yes" />
+                    <div className="w-full"><WindowPicker name="visit_window" /></div>
                     <Submit className="btn-ink btn-lg rounded-full px-6">Yes, they said yes</Submit>
                   </form>
                 )}
@@ -160,10 +163,11 @@ export default async function JobPage({ params, searchParams }: {
                     <form action={setVisitDate.bind(null, id)} className="flex flex-wrap items-end gap-2">
                       <div className="w-52">
                         <label className="label" htmlFor="visit">Visit date</label>
-                        <input id="visit" name="scheduled_for" type="date" required defaultValue={job.scheduled_for ?? ""} className="field" />
+                        <DatePicker id="visit" name="scheduled_for" today={today} required defaultValue={job.scheduled_for ?? ""} />
                       </div>
                       <TechPick id="tech_visit" />
-                      <Submit className="btn-line">Book visit</Submit>
+                      <div className="w-full"><WindowPicker name="visit_window" defaultValue={job.visit_window} /></div>
+                      <Submit className="btn-ink">Book visit</Submit>
                     </form>
                     <form action={moveStage.bind(null, id, "done")}><Submit className="btn-ink btn-lg rounded-full px-6">Job done</Submit></form>
                   </div>
@@ -236,7 +240,7 @@ export default async function JobPage({ params, searchParams }: {
                 <form action={setReminder.bind(null, id)} className="flex items-end gap-2">
                   <div className="flex-1">
                     <label className="label" htmlFor="follow_up_on">Remind me on</label>
-                    <input id="follow_up_on" name="follow_up_on" type="date" defaultValue={job.follow_up_on ?? ""} className="field" />
+                    <DatePicker id="follow_up_on" name="follow_up_on" today={today} defaultValue={job.follow_up_on ?? ""} placeholder="Pick a day" />
                   </div>
                   <Submit className="btn-line">Set</Submit>
                 </form>

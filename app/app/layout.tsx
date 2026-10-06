@@ -23,7 +23,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const stamp = (j: (typeof jobs)[number]) => (j.last_inbound_at && j.last_inbound_at > j.created_at ? j.last_inbound_at : j.created_at);
   const newest = jobs.reduce<(typeof jobs)[number] | null>((a, j) => (!a || stamp(j) > stamp(a) ? j : a), null);
   const latest = newest ? { id: newest.id, at: stamp(newest), name: newest.business ?? newest.customer_name, urgent: newest.urgent } : null;
-  const waiting = waitingEmergencies(jobs, now);
+  // Oldest first: the one that has waited longest is the most urgent to answer.
+  const waiting = waitingEmergencies(jobs, now).sort((a, z) => a.created_at.localeCompare(z.created_at));
   const needsSetup = !profile.is_guest && (profile.business_name === "My business" || !profile.business_phone);
 
   return (
@@ -54,13 +55,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </header>
 
       <main className="min-w-0 flex-1 px-4 pb-28 pt-6 md:px-8 md:pb-16 md:pt-10 xl:px-12">
-        {waiting.map((j) => {
+        {waiting.slice(0, 1).map((j) => {
           const mins = Math.max(1, Math.round((now.getTime() - new Date(j.created_at).getTime()) / 60_000));
           const tel = dialable(j.phone);
           return (
             <div key={j.id} role="alert" className="mx-auto mb-4 flex max-w-[1240px] flex-wrap items-center gap-3 rounded-xl bg-urgent px-4 py-3 text-white shadow-[0_12px_30px_-12px_rgba(229,72,77,.7)]">
               <span className="relative flex size-2.5"><span className="absolute inline-flex size-full animate-ping rounded-full bg-white opacity-75" /><span className="relative inline-flex size-2.5 rounded-full bg-white" /></span>
-              <p className="min-w-0 flex-1 text-sm"><span className="font-semibold">Emergency waiting {mins < 60 ? `${mins} min` : `${Math.round(mins / 60)} h`}:</span> {j.business ?? j.customer_name}, {j.issue}</p>
+              <p className="min-w-0 flex-1 text-sm"><span className="font-semibold">Emergency waiting {mins < 60 ? `${mins} min` : `${Math.round(mins / 60)} h`}:</span> {j.business ?? j.customer_name}, {j.issue}
+                {waiting.length > 1 && <a href="/app" className="ml-2 whitespace-nowrap font-semibold underline underline-offset-2">+{waiting.length - 1} more waiting</a>}</p>
               {tel && <a href={`tel:${tel}`} className="btn btn-sm rounded-full bg-white text-urgent-ink hover:bg-white/90"><PhoneIcon size={14} /> Call</a>}
               <a href={`/app/jobs/${j.id}`} className="btn btn-sm rounded-full border border-white/40 text-white hover:bg-white/10">Open</a>
               <form action={acknowledge.bind(null, j.id)}><Submit className="btn btn-sm rounded-full text-white/90 hover:bg-white/10">I&apos;m on it</Submit></form>

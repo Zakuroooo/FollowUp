@@ -14,7 +14,7 @@ function job(p: Partial<Job>): Job {
     id: p.id ?? Math.random().toString(36).slice(2), owner_id: "o", customer_name: "X", business: null, phone: null,
     source: "call", issue: null, urgent: false, urgency_source: "user", urgency_reason: null, stage: "new",
     quote_amount: null, scheduled_for: null, follow_up_on: null, lost_reason: null, notes: null,
-    last_contact_at: null, first_response_at: null, last_inbound_at: null, tech: null, attempts: 0, acknowledged_at: null, alert_count: 0, last_alert_at: null, stage_changed_at: hoursAgo(1), created_at: hoursAgo(1), ...p,
+    last_contact_at: null, first_response_at: null, last_inbound_at: null, tech: null, visit_window: null, attempts: 0, acknowledged_at: null, alert_count: 0, last_alert_at: null, stage_changed_at: hoursAgo(1), created_at: hoursAgo(1), ...p,
   };
 }
 

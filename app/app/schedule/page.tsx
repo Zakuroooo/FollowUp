@@ -23,6 +23,8 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   const overdue = scheduled.filter((j) => j.scheduled_for && j.scheduled_for < today);
   const noDate = scheduled.filter((j) => !j.scheduled_for);
   const days = [...new Set(booked.map((j) => j.scheduled_for as string))].sort();
+  const order = ["8–10 AM", "10 AM–12 PM", "12–2 PM", "2–4 PM", "4–6 PM"];
+  booked.sort((a, z) => (order.indexOf(a.visit_window ?? "") + 1 || 9) - (order.indexOf(z.visit_window ?? "") + 1 || 9));
   const techs = profile?.techs ?? [];
   const load = (t: string) => booked.filter((j) => j.tech === t).length;
 
@@ -30,7 +32,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
     <li>
       <Link href={`/app/jobs/${j.id}`} className="flex items-center gap-4 px-5 py-3.5 hover:bg-subtle/50">
         <span className={`w-24 shrink-0 text-[13px] font-medium ${j.tech ? "text-ink" : "text-warn"}`}>{j.tech ?? "No tech yet"}</span>
-        <span className="min-w-0 flex-1"><span className="font-semibold">{j.business ?? j.customer_name}</span><span className="block truncate text-sm text-ink-2">{j.issue}</span></span>
+        <span className="min-w-0 flex-1"><span className="font-semibold">{j.business ?? j.customer_name}</span><span className="block truncate text-sm text-ink-2">{j.visit_window ? `${j.visit_window} · ` : ""}{j.issue}</span></span>
         {j.quote_amount !== null && <span className="hidden font-mono text-sm sm:inline">{money(j.quote_amount)}</span>}
       </Link>
     </li>

@@ -7,10 +7,13 @@ cd "$(dirname "$0")/.."
 REF="qofdlzikeupikpkmjpmk"
 put() {
   npx vercel env rm "$1" production -y >/dev/null 2>&1
-  if printf "%s" "$2" | npx vercel env add "$1" production >/dev/null 2>&1; then echo "  ✓ $1 set"; else echo "  ✗ $1 FAILED — run the script again"; fi
+  local out
+  if out="$(printf "%s" "$2" | npx vercel env add "$1" production 2>&1)"; then echo "  ✓ $1 set"
+  else echo "  ✗ $1 FAILED. Vercel said:"; printf "%s\n" "$out" | grep -vF "$2" | tail -8 | sed 's/^/      /'; fi
 }
-ANON="$(npx supabase projects api-keys --project-ref "$REF" -o json 2>/dev/null | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const k=JSON.parse(s).find(x=>x.name==="anon");process.stdout.write(k?k.api_key:"")})')"
-[ -n "$ANON" ] && put NEXT_PUBLIC_SUPABASE_ANON_KEY "$ANON" || echo "  ✗ couldn't read the anon key (run: npx supabase login)"
+ANON="$(npx --yes supabase projects api-keys --project-ref "$REF" -o json 2>/dev/null | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const i=s.indexOf("[");try{const k=JSON.parse(s.slice(i,s.lastIndexOf("]")+1)).find(x=>x.type==="publishable");process.stdout.write(k?k.api_key:"")}catch{}})')"
+if [ -n "$ANON" ]; then echo "  read the Supabase publishable key (${#ANON} characters, safe to be public)"; put NEXT_PUBLIC_SUPABASE_ANON_KEY "$ANON"
+else echo "  ✗ couldn't read the anon key from Supabase. Run: npx supabase login   then this script again"; fi
 read -rsp "Groq API key (hidden, Enter to keep current): " GROQ; echo
 [ -n "$GROQ" ] && put GROQ_API_KEY "$GROQ"
 read -rsp "Resend API key (hidden, Enter to keep current): " RESEND; echo

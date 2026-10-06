@@ -21,6 +21,7 @@ export interface Job {
   follow_up_on: string | null; // YYYY-MM-DD
   lost_reason: string | null;
   tech: string | null;
+  visit_window: string | null;
   attempts: number;
   acknowledged_at: string | null;
   alert_count: number;

@@ -100,6 +100,7 @@ const Move = z.object({
   lost_reason: z.string().trim().max(60).optional(),
   lost_detail: z.string().trim().max(150).optional(),
   tech: z.string().trim().max(60).optional(),
+  visit_window: z.string().trim().max(20).optional(),
 });
 
 /** Move a job one step forward (or to lost / a specific stage), with the details that step needs. */
@@ -125,6 +126,7 @@ export async function moveStage(id: string, to: Stage, form?: FormData) {
     patch.scheduled_for = fields.scheduled_for;
     extra = ` · visit ${fields.scheduled_for}`;
   }
+  if (to === "scheduled" && fields.scheduled_for) patch.visit_window = fields.visit_window || null;
   if (to === "scheduled" && fields.tech) {
     patch.tech = fields.tech;
     extra += ` · ${fields.tech}`;
@@ -149,9 +151,10 @@ export async function setVisitDate(id: string, form: FormData) {
   const date = String(form.get("scheduled_for") ?? "");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
   const tech = String(form.get("tech") ?? "").trim().slice(0, 60) || null;
+  const visit_window = String(form.get("visit_window") ?? "").trim().slice(0, 20) || null;
   const supabase = await db();
-  await supabase.from("jobs").update({ scheduled_for: date, tech }).eq("id", id);
-  await event(id, user.id, "note", `Visit booked for ${date}${tech ? ` with ${tech}` : ""}`);
+  await supabase.from("jobs").update({ scheduled_for: date, tech, visit_window }).eq("id", id);
+  await event(id, user.id, "note", `Visit booked for ${date}${visit_window ? `, ${visit_window}` : ""}${tech ? ` with ${tech}` : ""}`);
   refresh(id);
 }
 
