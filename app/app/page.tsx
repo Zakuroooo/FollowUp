@@ -12,6 +12,7 @@ import { Sparkles } from "@/components/Sparkles";
 import { AlertsToggle } from "@/components/AlertsToggle";
 import { GettingStarted, PageHelp } from "@/components/GettingStarted";
 import { listMessages } from "@/lib/data";
+import { todayBrief } from "@/lib/ai";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,12 @@ export default async function CallList() {
     return new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { timeZone: "UTC", weekday: "short", month: "short", day: "numeric" });
   };
   const date = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long", month: "long", day: "numeric" }).format(now);
+  const g = (k: string) => groups.find((x) => x.key === k)?.items ?? [];
+  const brief = profile && jobs.length ? await todayBrief(profile.id, {
+    emergencies: g("emergency").map((i) => `${i.job.business ?? i.job.customer_name} (${i.job.issue ?? "equipment down"})`),
+    calls: total, quotesOwed: g("quote").length, followUps: g("follow_up").length,
+    waitingValue: s.waitingOnYesValue, firstCall: groups[0]?.items[0]?.job.business ?? groups[0]?.items[0]?.job.customer_name ?? null,
+  }) : null;
 
   if (jobs.length === 0) {
     return (
@@ -79,6 +86,12 @@ export default async function CallList() {
           <h1 className="display mt-1 text-[32px] leading-tight md:text-[38px]">
             {total === 0 ? "You're all caught up" : `${total} ${total === 1 ? "call" : "calls"} to make today`}
           </h1>
+          {brief && (
+            <p className="mt-3 flex max-w-3xl items-start gap-2.5 rounded-xl border border-brand/20 bg-brand-soft/60 px-4 py-3 text-[15px] leading-relaxed text-ink">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-1 shrink-0 text-brand" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z" /></svg>
+              <span><span className="font-semibold">Today: </span>{brief.text}</span>
+            </p>
+          )}
           <PageHelp>Start with the big <b>Call first</b> card, then work down the list. After each call, open the job and tap what happened (quote sent, they said yes…). If nobody picks up, tap <b>No answer</b>: they come back tomorrow. Red means equipment is down: call those first.</PageHelp>
         </div>
         <Link href="/app/jobs/new" className="btn-brand hidden md:inline-flex">

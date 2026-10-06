@@ -51,6 +51,15 @@ export default async function JobPage({ params, searchParams }: {
   const step = FLOW.indexOf(job.stage);
   const back = previousStage(job.stage);
   const ask = ASK[job.stage];
+  // When each stage was reached, read from the history ("Moved from Quote to Their yes").
+  const reached: Partial<Record<Stage, string>> = { new: job.created_at };
+  for (const e of [...events].reverse()) {
+    if (e.kind !== "stage" || !e.detail) continue;
+    const to = e.detail.match(/ to (.+?)(?: ·|$)/)?.[1];
+    const st = (Object.keys(STAGE_SHORT) as Stage[]).find((k) => STAGE_SHORT[k] === to);
+    if (st) reached[st] = e.at;
+  }
+  const shortDate = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
   const facts: [string, string][] = [
     ["Quote", job.quote_amount !== null ? money(job.quote_amount) : "Not sent"],
@@ -119,6 +128,7 @@ export default async function JobPage({ params, searchParams }: {
                 {i > 0 && <span aria-hidden="true" className={`absolute right-1/2 top-[7px] h-0.5 w-full ${i <= step ? "bg-brand" : "bg-white/15"}`} />}
                 <span className={`relative z-10 size-4 rounded-full ${i < step ? "bg-brand" : i === step ? "bg-white shadow-[0_0_0_4px_rgba(43,92,255,.45)]" : "bg-[#141a30] ring-2 ring-inset ring-white/20"}`} />
                 <span className={`text-[11px] leading-tight md:text-[13px] ${i === step ? "font-semibold text-white" : "text-white/45"}`}>{STAGE_SHORT[s]}</span>
+                {i <= step && reached[s] && <span className="text-[10px] text-white/40 md:text-[11px]">{shortDate(reached[s] as string)}</span>}
               </li>
             ))}
           </ol>
