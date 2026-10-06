@@ -7,8 +7,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db, currentUser } from "@/lib/db/server";
-import { getJob } from "@/lib/data";
+import { getJob, getProfile } from "@/lib/data";
 import { STAGE_SHORT, previousStage, isOpen } from "@/lib/stages";
+import { todayIn } from "@/lib/rules";
 import { SOURCES, STAGES, type Stage } from "@/lib/types";
 import { triageByRules } from "@/lib/triage";
 import { phoneKey } from "@/lib/phone";
@@ -86,7 +87,8 @@ export async function addJob(_prev: FormState, form: FormData): Promise<FormStat
 const Move = z.object({
   quote_amount: z.coerce.number().min(0).max(1_000_000).optional(),
   scheduled_for: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("").transform(() => undefined)),
-  lost_reason: z.string().trim().max(200).optional(),
+  lost_reason: z.string().trim().max(60).optional(),
+  lost_detail: z.string().trim().max(150).optional(),
 });
 
 /** Move a job one step forward (or to lost / a specific stage), with the details that step needs. */
@@ -101,6 +103,8 @@ export async function moveStage(id: string, to: Stage, form?: FormData) {
   const now = new Date().toISOString();
   const patch: Record<string, unknown> = { stage: to, stage_changed_at: now, last_contact_at: now, follow_up_on: null };
   if (job.stage === "lost") patch.lost_reason = null; // reopening clears the old reason
+  // Leaving "new" means we finally talked to them: that's the end of the "time to call back" clock.
+  if (job.stage === "new" && !job.first_response_at && to !== "lost") patch.first_response_at = now;
   let extra = "";
   if (to === "awaiting_yes" && fields.quote_amount !== undefined) {
     patch.quote_amount = fields.quote_amount;
@@ -111,8 +115,9 @@ export async function moveStage(id: string, to: Stage, form?: FormData) {
     extra = ` · visit ${fields.scheduled_for}`;
   }
   if (to === "lost") {
-    patch.lost_reason = fields.lost_reason || null;
-    extra = fields.lost_reason ? ` · ${fields.lost_reason}` : "";
+    const reason = [fields.lost_reason, fields.lost_detail].filter(Boolean).join(": ");
+    patch.lost_reason = reason || null;
+    extra = reason ? ` · ${reason}` : "";
   }
 
   const supabase = await db();
@@ -148,7 +153,12 @@ export async function logCall(id: string, form: FormData) {
   if (!user) redirect("/login");
   const note = String(form.get("note") ?? "").trim().slice(0, 300);
   const supabase = await db();
-  await supabase.from("jobs").update({ last_contact_at: new Date().toISOString(), follow_up_on: null }).eq("id", id);
+  const job = await getJob(id);
+  const now = new Date().toISOString();
+  await supabase.from("jobs").update({
+    last_contact_at: now, follow_up_on: null,
+    ...(job && !job.first_response_at ? { first_response_at: now } : {}),
+  }).eq("id", id);
   await event(id, user.id, "called", note ? `Called: ${note}` : "Called");
   refresh(id);
 }
@@ -183,3 +193,33 @@ export async function loadDemoJobs() {
   refresh();
 }
 
+
+/** "Called, no answer": push the job to tomorrow's list so it can't be forgotten. */
+export async function noAnswer(id: string) {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const profile = await getProfile();
+  const today = todayIn(profile?.timezone ?? "America/New_York", new Date());
+  const d = new Date(`${today}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  const tomorrow = d.toISOString().slice(0, 10);
+  const supabase = await db();
+  await supabase.from("jobs").update({ follow_up_on: tomorrow }).eq("id", id);
+  await event(id, user.id, "called", "Called, no answer. Back on the list tomorrow");
+  refresh(id);
+}
+
+export type CustomerMatch = { name: string; business: string | null; jobs: number; lastIssue: string | null } | null;
+
+/** Repeat customers: the same phone number fills in who they are, and shows how many jobs they've had. */
+export async function lookupCustomer(phone: string): Promise<CustomerMatch> {
+  const user = await currentUser();
+  if (!user) return null;
+  const key = phoneKey(phone);
+  if (!key) return null;
+  const supabase = await db();
+  const { data } = await supabase.from("jobs").select("customer_name, business, phone, issue, created_at").order("created_at", { ascending: false });
+  const mine = (data ?? []).filter((j) => phoneKey(j.phone) === key);
+  if (mine.length === 0) return null;
+  return { name: mine[0].customer_name, business: mine[0].business, jobs: mine.length, lastIssue: mine[0].issue };
+}

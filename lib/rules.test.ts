@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { callList, classify, summary } from "./rules";
+import { callList, callbackTime, classify, comingUp, summary } from "./rules";
 import { triageByRules } from "./triage";
 import { dialable, phoneAppearsIn, phoneKey } from "./phone";
 import { nextStage, previousStage } from "./stages";
@@ -14,7 +14,7 @@ function job(p: Partial<Job>): Job {
     id: p.id ?? Math.random().toString(36).slice(2), owner_id: "o", customer_name: "X", business: null, phone: null,
     source: "call", issue: null, urgent: false, urgency_source: "user", urgency_reason: null, stage: "new",
     quote_amount: null, scheduled_for: null, follow_up_on: null, lost_reason: null, notes: null,
-    last_contact_at: null, stage_changed_at: hoursAgo(1), created_at: hoursAgo(1), ...p,
+    last_contact_at: null, first_response_at: null, stage_changed_at: hoursAgo(1), created_at: hoursAgo(1), ...p,
   };
 }
 
@@ -89,5 +89,32 @@ describe("phones and stages", () => {
     expect(nextStage("done")).toBeNull();
     expect(previousStage("awaiting_yes")).toBe("quote");
     expect(previousStage("lost")).toBe("new");
+  });
+});
+
+describe("no answer, coming up, time to call back", () => {
+  test("a job pushed to tomorrow is off today's list and back tomorrow as a reminder", () => {
+    const j = job({ follow_up_on: "2026-10-07" });
+    expect(classify(j, NOW, TODAY)).toBeNull();
+    expect(classify(j, NOW, "2026-10-07")?.bucket).toBe("reminder");
+  });
+  test("coming up lists snoozed jobs, quiet-window quotes and booked visits, soonest first", () => {
+    const items = comingUp([
+      job({ id: "visit", stage: "scheduled", scheduled_for: "2026-10-09" }),
+      job({ id: "snooze", follow_up_on: "2026-10-07" }),
+      job({ id: "quote", stage: "awaiting_yes", last_contact_at: hoursAgo(20) }),
+      job({ id: "today", urgent: true }), // on today's list, so not "coming up"
+    ], NOW, TODAY, "America/New_York");
+    expect(items.map((i) => i.job.id)).toEqual(["snooze", "quote", "visit"]);
+    expect(items[1].due).toBe("2026-10-07");
+  });
+  test("time to call back is the median, and counts who is still waiting", () => {
+    const t = callbackTime([
+      job({ created_at: hoursAgo(10), first_response_at: hoursAgo(9) }), // 1 h
+      job({ created_at: hoursAgo(60), first_response_at: hoursAgo(8) }), // 52 h
+      job({ created_at: hoursAgo(20), first_response_at: hoursAgo(17) }), // 3 h
+      job({}), // still waiting
+    ], NOW);
+    expect(t).toEqual({ medianHours: 3, sample: 3, waiting: 1 });
   });
 });

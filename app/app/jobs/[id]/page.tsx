@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { getJob, listEvents } from "@/lib/data";
-import { logCall, moveBack, moveStage, setReminder, setVisitDate, toggleUrgent } from "@/lib/actions/jobs";
+import { logCall, moveBack, moveStage, noAnswer, setReminder, setVisitDate, toggleUrgent } from "@/lib/actions/jobs";
 import { ago } from "@/lib/rules";
-import { FLOW, SOURCE_LABEL, STAGE_LABEL, STAGE_SHORT, isOpen, previousStage } from "@/lib/stages";
+import { FLOW, LOST_REASONS, SOURCE_LABEL, STAGE_LABEL, STAGE_SHORT, isOpen, previousStage } from "@/lib/stages";
 import { dialable } from "@/lib/phone";
 import { Submit } from "@/components/Submit";
 import { Sparkles } from "@/components/Sparkles";
@@ -152,13 +152,18 @@ export default async function JobPage({ params, searchParams }: {
               </div>
 
               <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-line-2 pt-4">
+                <form action={noAnswer.bind(null, id)}><Submit className="btn-line btn-sm">No answer, try tomorrow</Submit></form>
                 <form action={toggleUrgent.bind(null, id)}><Submit className="btn-line btn-sm">{job.urgent ? "Not urgent" : "Mark urgent"}</Submit></form>
                 {back && <form action={moveBack.bind(null, id)}><Submit className="btn-line btn-sm">Undo: back to {STAGE_SHORT[back]}</Submit></form>}
                 <details className="relative ml-auto">
                   <summary className="btn btn-sm flex cursor-pointer list-none text-urgent-ink hover:bg-urgent-soft [&::-webkit-details-marker]:hidden">Mark as lost</summary>
                   <form action={moveStage.bind(null, id, "lost")} className="absolute right-0 z-20 mt-2 flex w-72 flex-col gap-2 rounded-xl border border-line bg-card p-3 shadow-[0_16px_40px_-16px_rgba(11,13,18,.25)]">
-                    <label htmlFor="lost_reason" className="label mb-0">Why was it lost? (optional)</label>
-                    <input id="lost_reason" name="lost_reason" maxLength={200} placeholder="e.g. went with a cheaper shop" className="field text-sm" />
+                    <label htmlFor="lost_reason" className="label mb-0">Why was it lost?</label>
+                    <select id="lost_reason" name="lost_reason" required defaultValue="" className="field text-sm">
+                      <option value="" disabled>Pick a reason</option>
+                      {LOST_REASONS.map((r) => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                    <input name="lost_detail" maxLength={150} placeholder="Detail (optional)" className="field text-sm" />
                     <Submit className="btn-urgent btn-sm">Mark as lost</Submit>
                   </form>
                 </details>

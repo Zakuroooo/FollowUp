@@ -22,6 +22,7 @@ export interface Job {
   lost_reason: string | null;
   notes: string | null;
   last_contact_at: string | null;
+  first_response_at: string | null;
   stage_changed_at: string;
   created_at: string;
 }
@@ -42,4 +43,5 @@ export interface Profile {
   digest_email: string | null;
   digest_enabled: boolean;
   is_guest: boolean;
+  digest_sent_on: string | null;
 }

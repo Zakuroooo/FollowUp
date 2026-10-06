@@ -40,10 +40,16 @@ export default async function AllJobs({ searchParams }: { searchParams: Promise<
           <p className="text-[13px] font-medium text-brand">{s.open} open jobs</p>
           <h1 className="display mt-1 text-[32px] leading-tight md:text-[38px]">All jobs</h1>
         </div>
-        <Link href="/app/jobs/new" className="btn-brand hidden md:inline-flex">
+        <div className="hidden gap-2 md:flex">
+        <a href="/app/export" className="btn-line">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
+          Export CSV
+        </a>
+        <Link href="/app/jobs/new" className="btn-brand">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
           Add a job
         </Link>
+        </div>
       </header>
 
       {/* The pipeline: one tile per open stage. Tiles are the filter. */}

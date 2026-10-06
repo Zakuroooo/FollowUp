@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { listJobs, getProfile } from "@/lib/data";
-import { callList, summary, todayIn, type CallItem } from "@/lib/rules";
+import { callList, callbackTime, comingUp, summary, todayIn, type CallItem } from "@/lib/rules";
 import { dialable } from "@/lib/phone";
-import { loadDemoJobs } from "@/lib/actions/jobs";
+import { loadDemoJobs, noAnswer } from "@/lib/actions/jobs";
+import { Submit } from "@/components/Submit";
 import { STAGE_SHORT } from "@/lib/stages";
 import type { Stage } from "@/lib/types";
 import { money, PhoneIcon } from "@/components/ui";
@@ -23,8 +24,16 @@ export default async function CallList() {
   const [jobs, profile] = await Promise.all([listJobs(), getProfile()]);
   const tz = profile?.timezone ?? "America/New_York";
   const now = new Date();
-  const { total, groups } = callList(jobs, now, todayIn(tz, now));
+  const today = todayIn(tz, now);
+  const { total, groups } = callList(jobs, now, today);
   const s = summary(jobs, now);
+  const upcoming = comingUp(jobs, now, today, tz);
+  const cb = callbackTime(jobs, now);
+  const dueLabel = (d: string) => {
+    const t = new Date(`${today}T12:00:00Z`); t.setUTCDate(t.getUTCDate() + 1);
+    if (d === t.toISOString().slice(0, 10)) return "Tomorrow";
+    return new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { timeZone: "UTC", weekday: "short", month: "short", day: "numeric" });
+  };
   const date = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long", month: "long", day: "numeric" }).format(now);
 
   if (jobs.length === 0) {
@@ -93,9 +102,38 @@ export default async function CallList() {
               ))}
             </div>
           )}
+
+          {upcoming.length > 0 && (
+            <section aria-labelledby="h-upcoming" className="mt-10">
+              <h2 id="h-upcoming" className="text-sm font-semibold">Coming up</h2>
+              <p className="mt-0.5 text-[13px] text-muted">Not due yet. Each one comes back to this list on its day.</p>
+              <ul className="mt-3 divide-y divide-line-2 overflow-hidden rounded-xl border border-dashed border-line bg-card/60">
+                {upcoming.map(({ job, due, why }) => (
+                  <li key={job.id}>
+                    <Link href={`/app/jobs/${job.id}`} className="flex items-center gap-4 px-5 py-3 hover:bg-subtle/50">
+                      <span className="w-24 shrink-0 text-[13px] font-medium text-brand">{dueLabel(due)}</span>
+                      <span className="min-w-0 flex-1 truncate text-sm"><span className="font-medium">{job.business ?? job.customer_name}</span><span className="text-muted"> · {job.issue}</span></span>
+                      <span className="hidden shrink-0 text-[13px] text-muted sm:inline">{why}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
 
         <aside className="flex flex-col gap-4 lg:sticky lg:top-10 lg:self-start">
+          <div className="rounded-2xl border border-line bg-card p-5">
+            <p className="text-[13px] text-muted">Time to call back</p>
+            <p className="mt-1 font-mono text-[30px] font-medium tracking-tight">
+              {cb.medianHours === null ? "—" : cb.medianHours < 1 ? `${Math.round(cb.medianHours * 60)} min` : `${cb.medianHours} h`}
+            </p>
+            <p className="mt-1 text-[13px] text-ink-2">
+              {cb.sample ? `median from request to first conversation, last 30 days (${cb.sample} jobs)` : "shows once you've talked to a few customers"}
+            </p>
+            {cb.waiting > 0 && <p className="mt-3 rounded-lg bg-subtle px-3 py-2 text-[13px]"><span className="font-semibold">{cb.waiting}</span> {cb.waiting === 1 ? "request is" : "requests are"} still waiting for a first call</p>}
+          </div>
+
           <div className="rounded-2xl border border-line bg-card p-5">
             <p className="text-[13px] text-muted">Waiting on a yes</p>
             <p className="mt-1 font-mono text-[30px] font-medium tracking-tight">{money(s.waitingOnYesValue)}</p>
@@ -161,6 +199,9 @@ function NextCall({ item, label }: { item: CallItem; label: string }) {
             </a>
           )}
           <Link href={`/app/jobs/${job.id}`} className="btn btn-lg rounded-full border border-white/15 px-6 text-white backdrop-blur hover:bg-white/10">Open job</Link>
+          <form action={noAnswer.bind(null, job.id)}>
+            <Submit className="btn btn-lg rounded-full px-5 text-white/70 hover:bg-white/10 hover:text-white">No answer, try tomorrow</Submit>
+          </form>
         </div>
       </div>
     </section>
@@ -183,6 +224,9 @@ function Row({ item, hot }: { item: CallItem; hot: boolean }) {
           {overdue && !hot && <span className="font-medium text-warn"> · overdue</span>}
         </p>
       </Link>
+      <form action={noAnswer.bind(null, job.id)} className="hidden sm:block">
+        <Submit className="btn btn-sm whitespace-nowrap text-muted hover:bg-subtle hover:text-ink">No answer</Submit>
+      </form>
       {tel && (
         <a href={`tel:${tel}`} aria-label={`Call ${job.customer_name} at ${job.phone}`}
           className={`grid size-10 shrink-0 place-items-center rounded-full ${hot ? "bg-urgent text-white hover:bg-urgent-ink" : "bg-brand-soft text-brand hover:bg-brand hover:text-white"}`}>

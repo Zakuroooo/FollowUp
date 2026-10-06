@@ -1,30 +1,50 @@
 "use client";
 import Link from "next/link";
-import { useActionState } from "react";
-import { addJob, type FormState } from "@/lib/actions/jobs";
+import { useActionState, useRef, useState } from "react";
+import { addJob, lookupCustomer, type CustomerMatch, type FormState } from "@/lib/actions/jobs";
 import { SOURCE_LABEL } from "@/lib/stages";
 import { SOURCES } from "@/lib/types";
 
 export function AddJobForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(addJob, {});
+  const [match, setMatch] = useState<CustomerMatch>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const bizRef = useRef<HTMLInputElement>(null);
+  const sourceRef = useRef<HTMLSelectElement>(null);
+
+  // Repeat customer: a known phone number fills in who they are (never overwrites what was typed).
+  async function checkPhone(phone: string) {
+    if (phone.replace(/\D/g, "").length < 10) { setMatch(null); return; }
+    const m = await lookupCustomer(phone);
+    setMatch(m);
+    if (!m) return;
+    if (nameRef.current && !nameRef.current.value) nameRef.current.value = m.name;
+    if (bizRef.current && !bizRef.current.value && m.business) bizRef.current.value = m.business;
+    if (sourceRef.current && sourceRef.current.value === "call") sourceRef.current.value = "repeat";
+  }
 
   return (
     <form action={action} className="card grid gap-4 p-5 md:grid-cols-2 md:p-6">
       <div>
         <label className="label" htmlFor="customer_name">Customer name *</label>
-        <input id="customer_name" name="customer_name" required maxLength={120} autoComplete="off" className="field" />
+        <input ref={nameRef} id="customer_name" name="customer_name" required maxLength={120} autoComplete="off" className="field" />
       </div>
       <div>
         <label className="label" htmlFor="business">Business</label>
-        <input id="business" name="business" maxLength={120} placeholder="e.g. Russo's Pizzeria" className="field" />
+        <input ref={bizRef} id="business" name="business" maxLength={120} placeholder="e.g. Russo's Pizzeria" className="field" />
       </div>
       <div>
         <label className="label" htmlFor="phone">Phone</label>
-        <input id="phone" name="phone" type="tel" maxLength={40} placeholder="(614) 555-0142" className="field" />
+        <input id="phone" name="phone" type="tel" maxLength={40} placeholder="(614) 555-0142" className="field" onBlur={(e) => checkPhone(e.target.value)} />
+        {match && (
+          <p className="mt-1.5 text-[13px] text-brand">
+            Returning customer: <span className="font-medium">{match.business ?? match.name}</span>, {match.jobs} earlier {match.jobs === 1 ? "job" : "jobs"}{match.lastIssue ? ` (last: ${match.lastIssue})` : ""}
+          </p>
+        )}
       </div>
       <div>
         <label className="label" htmlFor="source">Came in by</label>
-        <select id="source" name="source" defaultValue="call" className="field">
+        <select ref={sourceRef} id="source" name="source" defaultValue="call" className="field">
           {SOURCES.map((s) => <option key={s} value={s}>{SOURCE_LABEL[s]}</option>)}
         </select>
       </div>

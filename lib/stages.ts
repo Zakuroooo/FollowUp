@@ -44,3 +44,13 @@ export function previousStage(s: Stage): Stage | null {
   const i = FLOW.indexOf(s);
   return i > 0 ? FLOW[i - 1] : null;
 }
+
+/** Why a job was lost. A fixed list, so the numbers mean something ("price" vs "never heard back"). */
+export const LOST_REASONS = [
+  "Went with another company",
+  "Price too high",
+  "Never heard back",
+  "Fixed it themselves",
+  "Not worth repairing",
+  "Other",
+] as const;

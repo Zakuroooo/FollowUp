@@ -10,6 +10,7 @@ create table public.profiles (
   digest_email   text,
   digest_enabled boolean not null default true,
   is_guest       boolean not null default false,
+  digest_sent_on date,                          -- the 7 AM email goes out at most once a day
   created_at     timestamptz not null default now()
 );
 
@@ -36,6 +37,7 @@ create table public.jobs (
   lost_reason      text,
   notes            text check (length(notes) <= 2000),
   last_contact_at  timestamptz,
+  first_response_at timestamptz,               -- first real conversation: powers "time to call back"
   stage_changed_at timestamptz not null default now(),
   created_at       timestamptz not null default now()
 );
@@ -60,6 +62,15 @@ create table public.ai_usage (
   calls    int not null default 0,
   primary key (owner_id, day)
 );
+-- Public request form: one row per submission attempt, used only to rate-limit (server-side, service role).
+create table public.form_hits (
+  id      bigint generated always as identity primary key,
+  slug    text not null,
+  ip_hash text not null,
+  at      timestamptz not null default now()
+);
+create index form_hits_lookup_idx on public.form_hits (ip_hash, at desc);
+
 create table public.ai_cache (
   hash       text primary key,
   kind       text not null,
@@ -73,6 +84,7 @@ alter table public.jobs       enable row level security;
 alter table public.job_events enable row level security;
 alter table public.ai_usage   enable row level security;
 alter table public.ai_cache   enable row level security;   -- no policies: server (service role) only
+alter table public.form_hits  enable row level security;   -- no policies: server (service role) only
 
 create policy "own profile" on public.profiles
   for all using (id = auth.uid()) with check (id = auth.uid());
@@ -129,7 +141,25 @@ begin
   (me, 'Ed Morales',   'Morales Meats',          '(614) 555-0129', 'call',     'Freezer compressor replacement',                   false, 'rules', null,                           'done',         3200, current_date - 3, now() - interval '3 days', now() - interval '3 days', now() - interval '12 days', 'Paid', null),
   (me, 'Beth Young',   'Young''s Deli',          '(614) 555-0191', 'web_form', 'Quote for a new reach-in cooler',                  false, 'rules', null,                           'lost',         2100, null,             now() - interval '9 days', now() - interval '9 days', now() - interval '14 days', null, 'Went with another company');
 
+  -- first conversation happened some hours after each request (the slow one is the weekend web form)
+  update public.jobs set first_response_at = created_at + case customer_name
+      when 'Jim Turner' then interval '52 hours' when 'Dev Patel' then interval '3 hours'
+      when 'Karen White' then interval '1 hour' when 'Sam Chen' then interval '5 hours'
+      when 'Linda Brooks' then interval '2 hours' when 'Ana Silva' then interval '4 hours'
+      when 'Mike Grant' then interval '6 hours' when 'Priya Nair' then interval '3 hours'
+      when 'Ed Morales' then interval '1 hour' when 'Beth Young' then interval '30 hours' end
+  where owner_id = me and stage <> 'new';
+
+  -- one customer didn't pick up yesterday: back on the list tomorrow
+  insert into public.jobs (owner_id, customer_name, business, phone, source, issue, stage,
+                           follow_up_on, stage_changed_at, created_at, first_response_at)
+  values (me, 'Rosa Diaz', 'Diaz Taqueria', '(614) 555-0117', 'call', 'Prep table cooler running warm', 'new',
+          current_date + 1, now() - interval '1 day', now() - interval '1 day', null);
+
   insert into public.job_events (job_id, owner_id, at, kind, detail)
   select id, me, created_at, 'created', 'Request came in by ' || replace(source, '_', ' ')
   from public.jobs where owner_id = me;
+  insert into public.job_events (job_id, owner_id, at, kind, detail)
+  select id, me, now() - interval '20 hours', 'called', 'Called, no answer. Try again tomorrow'
+  from public.jobs where owner_id = me and customer_name = 'Rosa Diaz';
 end $$;

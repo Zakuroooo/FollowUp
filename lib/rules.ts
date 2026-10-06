@@ -63,7 +63,9 @@ const money = (n: number) => `$${n.toLocaleString("en-US", { maximumFractionDigi
 export function classify(job: Job, now: Date, today: string): CallItem | null {
   if (!isOpen(job.stage)) return null;
 
-  // A reminder date she set herself overrides every other rule.
+  // A date she set herself ("call me Tuesday", or "no answer, try tomorrow") overrides every other rule:
+  // before that day the job waits under "Coming up"; on the day it comes back as a reminder.
+  if (job.follow_up_on && job.follow_up_on > today) return null;
   if (job.follow_up_on && job.follow_up_on <= today) {
     return { job, bucket: "reminder", reason: `Reminder for ${job.follow_up_on}`, action: "Call", overdue: job.follow_up_on < today };
   }
@@ -127,4 +129,46 @@ export function summary(jobs: Job[], now: Date) {
       (["new", "quote", "awaiting_yes", "scheduled", "done", "lost"] as const).map((s) => [s, jobs.filter((j) => j.stage === s).length]),
     ) as Record<Job["stage"], number>,
   };
+}
+
+const addDays = (ymd: string, n: number) => {
+  const d = new Date(`${ymd}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+};
+
+export interface UpcomingItem { job: Job; due: string; why: string }
+
+/** Open jobs that are NOT on today's list, with the day each one comes back. Soonest first. */
+export function comingUp(jobs: Job[], now: Date, today: string, timeZone: string): UpcomingItem[] {
+  const out: UpcomingItem[] = [];
+  for (const job of jobs) {
+    if (!isOpen(job.stage) || classify(job, now, today)) continue;
+    if (job.follow_up_on && job.follow_up_on > today) {
+      out.push({ job, due: job.follow_up_on, why: "Call back" });
+    } else if (job.stage === "awaiting_yes") {
+      const last = todayIn(timeZone, new Date(job.last_contact_at ?? job.stage_changed_at));
+      out.push({ job, due: addDays(last, FOLLOW_UP_AFTER_DAYS), why: "Follow up if no answer" });
+    } else if (job.stage === "scheduled" && job.scheduled_for) {
+      out.push({ job, due: job.scheduled_for, why: "Visit booked" });
+    }
+  }
+  return out.sort((a, z) => a.due.localeCompare(z.due));
+}
+
+/**
+ * Time to call back: median hours from a request arriving to the first real conversation,
+ * over the last 30 days. This is the number behind the lost $2,000 freezer job.
+ */
+export function callbackTime(jobs: Job[], now: Date) {
+  const since = now.getTime() - 30 * DAY;
+  const hours = jobs
+    .filter((j) => j.first_response_at && new Date(j.created_at).getTime() >= since)
+    .map((j) => (new Date(j.first_response_at as string).getTime() - new Date(j.created_at).getTime()) / HOUR)
+    .sort((a, z) => a - z);
+  const waiting = jobs.filter((j) => j.stage === "new" && !j.first_response_at).length;
+  if (hours.length === 0) return { medianHours: null as number | null, sample: 0, waiting };
+  const mid = Math.floor(hours.length / 2);
+  const median = hours.length % 2 ? hours[mid] : (hours[mid - 1] + hours[mid]) / 2;
+  return { medianHours: Math.round(median * 10) / 10, sample: hours.length, waiting };
 }
