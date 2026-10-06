@@ -37,3 +37,25 @@ test("signed-out visitors cannot see the app", async ({ page }) => {
   await page.goto("/app/jobs");
   await expect(page).toHaveURL(/\/login\?next=/);
 });
+
+test("a website request lands on the owner's call list as an emergency", async ({ page, browser }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Try the demo" }).click();
+  await expect(page).toHaveURL(/\/app$/);
+  await page.goto("/app/settings");
+  const formUrl = (await page.locator("code").textContent())!.trim();
+
+  const customer = await (await browser.newContext()).newPage(); // signed out, like a real customer
+  await customer.goto(formUrl);
+  await customer.getByLabel("Your name").fill("E2E Customer");
+  await customer.getByLabel("Business").fill("E2E Diner");
+  await customer.getByLabel("Phone").fill(`(614) 555-${String(Date.now()).slice(-4)}`);
+  await customer.getByLabel("What's wrong?").fill("Reach-in cooler stopped, food at risk");
+  await customer.getByLabel(/Equipment is down/).check();
+  await customer.getByRole("button", { name: "Send request" }).click();
+  await expect(customer.getByText("Got it, thank you")).toBeVisible();
+
+  await page.goto("/app");
+  // The demo already has one emergency (Russo's) as "Call first", so the new one is next in the Emergencies group.
+  await expect(page.locator("main")).toContainText(/Emergencies[\s\S]*E2E Diner/);
+});

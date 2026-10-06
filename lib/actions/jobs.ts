@@ -13,8 +13,9 @@ import { todayIn } from "@/lib/rules";
 import { SOURCES, STAGES, type Stage } from "@/lib/types";
 import { triageByRules } from "@/lib/triage";
 import { phoneKey } from "@/lib/phone";
+import { draftFollowUp, parseRequest, triageAI, type Parsed } from "@/lib/ai";
 
-export type FormState = { error?: string; duplicateOf?: { id: string; name: string } };
+export type FormState = { error?: string; duplicateOf?: { id: string; name: string }; values?: Record<string, string> };
 
 const opt = (max: number) =>
   z.string().trim().max(max).optional().transform((v) => (v ? v : null));
@@ -43,8 +44,10 @@ function refresh(id?: string) {
 export async function addJob(_prev: FormState, form: FormData): Promise<FormState> {
   const user = await currentUser();
   if (!user) redirect("/login");
+  // React clears the form after an action; send back what was typed so nothing is lost on an error or warning.
+  const values = Object.fromEntries([...form.entries()].filter(([k, v]) => typeof v === "string" && k !== "confirm_duplicate")) as Record<string, string>;
   const parsed = NewJob.safeParse(Object.fromEntries(form));
-  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  if (!parsed.success) return { error: parsed.error.issues[0].message, values };
   const input = parsed.data;
   const supabase = await db();
 
@@ -53,13 +56,20 @@ export async function addJob(_prev: FormState, form: FormData): Promise<FormStat
   if (key && !input.confirm_duplicate) {
     const { data: open } = await supabase.from("jobs").select("id, customer_name, phone, stage").not("stage", "in", "(done,lost)");
     const dup = (open ?? []).find((j) => phoneKey(j.phone) === key);
-    if (dup) return { duplicateOf: { id: dup.id, name: dup.customer_name } };
+    if (dup) return { duplicateOf: { id: dup.id, name: dup.customer_name }, values };
   }
 
   // Urgency: the person decides; on "auto" the rules decide (and lean towards urgent).
-  const verdict = triageByRules(`${input.issue} ${input.notes ?? ""}`);
-  const urgent = input.urgent === "yes" ? true : input.urgent === "no" ? false : verdict.urgent;
-  const urgency_source = input.urgent === "auto" ? "rules" : "user";
+  const text = `${input.issue} ${input.notes ?? ""}`;
+  const verdict = triageByRules(text);
+  let urgent = input.urgent === "yes" ? true : input.urgent === "no" ? false : verdict.urgent;
+  let urgency_source: "rules" | "ai" | "user" = input.urgent === "auto" ? "rules" : "user";
+  let urgency_reason = input.urgent === "auto" ? verdict.reason : "set by you";
+  // Rules unsure → ask the AI. It can only RAISE urgency: a missed emergency costs more than a false alarm.
+  if (input.urgent === "auto" && !verdict.urgent && !verdict.sure) {
+    const ai = await triageAI(text, user.id);
+    if (ai) { urgent = true; urgency_source = "ai"; urgency_reason = `AI: ${ai.reason}`; }
+  }
 
   const { data: job, error } = await supabase
     .from("jobs")
@@ -73,11 +83,11 @@ export async function addJob(_prev: FormState, form: FormData): Promise<FormStat
       notes: input.notes,
       urgent,
       urgency_source,
-      urgency_reason: input.urgent === "auto" ? verdict.reason : "set by you",
+      urgency_reason,
     })
     .select("id")
     .single();
-  if (error || !job) return { error: "Could not save the job. Please try again." };
+  if (error || !job) return { error: "Could not save the job. Please try again.", values };
 
   await event(job.id, user.id, "created", `Request came in by ${input.source.replace("_", " ")}${urgent ? " · marked urgent" : ""}`);
   refresh();
@@ -222,4 +232,23 @@ export async function lookupCustomer(phone: string): Promise<CustomerMatch> {
   const mine = (data ?? []).filter((j) => phoneKey(j.phone) === key);
   if (mine.length === 0) return null;
   return { name: mine[0].customer_name, business: mine[0].business, jobs: mine.length, lastIssue: mine[0].issue };
+}
+
+/** Paste a text / voicemail / email → the Add form's fields. AI when available, rules otherwise. */
+export async function aiParse(text: string): Promise<Parsed | { error: string }> {
+  const user = await currentUser();
+  if (!user) return { error: "Please log in again." };
+  const t = text.trim();
+  if (t.length < 10) return { error: "Paste the whole message first." };
+  if (t.length > 4000) return { error: "That's very long. Paste just the message." };
+  return parseRequest(t, user.id);
+}
+
+/** A short follow-up text for this job, to copy or send from the phone. Nothing is sent automatically. */
+export async function draftMessage(id: string): Promise<{ text: string; via: "ai" | "template" } | { error: string }> {
+  const user = await currentUser();
+  if (!user) return { error: "Please log in again." };
+  const [job, profile] = await Promise.all([getJob(id), getProfile()]);
+  if (!job || !profile) return { error: "Job not found." };
+  return draftFollowUp(job, profile.business_name, user.id);
 }

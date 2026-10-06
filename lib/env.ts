@@ -12,7 +12,7 @@ const schema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(20),
   APP_URL: z.string().url().default("http://localhost:3200"),
   GROQ_API_KEY: z.string().optional(),
-  GROQ_MODEL: z.string().default("llama-3.3-70b-versatile"),
+  GROQ_MODEL: z.string().default("openai/gpt-oss-20b"),
   AI_DAILY_LIMIT: z.coerce.number().int().positive().default(40),
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default("FollowUp <onboarding@resend.dev>"),

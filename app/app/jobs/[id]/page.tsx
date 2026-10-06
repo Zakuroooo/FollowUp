@@ -6,6 +6,7 @@ import { FLOW, LOST_REASONS, SOURCE_LABEL, STAGE_LABEL, STAGE_SHORT, isOpen, pre
 import { dialable } from "@/lib/phone";
 import { Submit } from "@/components/Submit";
 import { Sparkles } from "@/components/Sparkles";
+import { DraftMessage } from "@/components/DraftMessage";
 import { BackLink, PhoneIcon, money } from "@/components/ui";
 import type { Stage } from "@/lib/types";
 
@@ -179,6 +180,10 @@ export default async function JobPage({ params, searchParams }: {
               </div>
               {back && <form action={moveBack.bind(null, id)}><Submit className="btn-line">Reopen: back to {STAGE_SHORT[back]}</Submit></form>}
             </section>
+          )}
+
+          {open && (
+            <DraftMessage jobId={id} tel={tel} label={job.stage === "awaiting_yes" ? "Chase the quote" : job.stage === "scheduled" ? "Confirm the visit" : job.stage === "quote" ? "Let them know the quote is coming" : "Call back by text"} />
           )}
 
           {open && (

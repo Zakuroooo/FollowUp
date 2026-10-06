@@ -118,3 +118,27 @@ describe("no answer, coming up, time to call back", () => {
     expect(t).toEqual({ medianHours: 3, sample: 3, waiting: 1 });
   });
 });
+
+import { draftByTemplate, parseByRules } from "./ai-fallback";
+
+describe("AI fallbacks (no key needed)", () => {
+  test("a pasted voicemail: phone, name, business and urgency come out without AI", () => {
+    const p = parseByRules("Hi, this is Tony Russo from Russo's Pizzeria. Our walk-in freezer is not holding temp, call me at (614) 555-0142");
+    expect(p).toMatchObject({ customer_name: "Tony Russo", phone: "(614) 555-0142", urgent: true, via: "rules" });
+    expect(p.business).toContain("Russo's Pizzeria");
+  });
+  test("a follow-up draft names the customer, the quote and the shop", () => {
+    const text = draftByTemplate({ customer_name: "Jim Turner", issue: "Walk-in cooler refrigerant leak", stage: "awaiting_yes", quote_amount: 2400 } as never, "Denise's Refrigeration (demo)");
+    expect(text).toContain("Hi Jim");
+    expect(text).toContain("$2,400");
+    expect(text).toContain("Denise's Refrigeration.");
+    expect(text).not.toContain("(demo)");
+  });
+});
+
+test("a draft never echoes the customer's own sentence, and fits how they reached us", () => {
+  const web = draftByTemplate({ customer_name: "Carla Mendes", issue: "Our walk-in cooler is at 50F, everything is warming", stage: "new", source: "web_form", quote_amount: null } as never, "Cold Air Co.");
+  expect(web).toBe("Hi Carla, it's Cold Air Co., following up on your repair request you sent through our website. When is a good time to talk? We can usually get a tech out quickly.");
+  const call = draftByTemplate({ customer_name: "Ed", issue: "Freezer door gasket", stage: "new", source: "call", quote_amount: null } as never, "Cold Air Co.");
+  expect(call).toContain("returning your call about the freezer door gasket");
+});
