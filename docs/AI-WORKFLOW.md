@@ -4,7 +4,7 @@ Gushwork's JD asks for engineers who use AI coding tools well. This is exactly h
 
 ## 1. Context first, code second
 Before any code, we wrote the context an AI agent needs to make good decisions:
-`CLAUDE.md` (rules + stack + layout), `docs/PRD.md` (the customer's problem in her words),
+`docs/PRD.md` (the customer's problem in her words),
 `docs/TRD.md`, `docs/SYSTEM-DESIGN.md`, `docs/EDGE-CASES.md`, `docs/DECISIONS.md`.
 **Why:** an agent with the customer's words and the non-negotiables builds the right thing; an agent with
 "build a CRM" builds the wrong one.

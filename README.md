@@ -16,11 +16,10 @@ built from one discovery call with its owner.
 ![Supabase](https://img.shields.io/badge/Supabase_Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=000)
 ![Tailwind](https://img.shields.io/badge/Tailwind_v4-06B6D4?logo=tailwindcss&logoColor=fff)
 ![Tests](https://img.shields.io/badge/tests-27_unit_·_4_e2e-2b5cff)
-![Built with Claude Code](https://img.shields.io/badge/built_with-Claude_Code-d97757)
 
-<a href="docs/demo.mp4"><img src="docs/screenshots/call-list.png" alt="The Call list: emergencies first, a reason on every row" width="900" /></a>
+<a href="https://followup-indol-seven.vercel.app/walkthrough.mp4"><img src="docs/preview.gif" alt="A customer texts that their freezer stopped; it arrives on the call list as an emergency with an alert" width="860" /></a>
 
-**▶ [Watch the 100-second walkthrough](docs/demo.mp4)** (recorded on the live app)
+**▶ [Watch the 2-minute narrated walkthrough](https://followup-indol-seven.vercel.app/walkthrough.mp4)**
 
 </div>
 
@@ -55,26 +54,23 @@ Denise runs a commercial refrigeration repair company: 4 technicians, 15–20 ne
 
 ---
 
+## See the automation in 60 seconds
+
+1. Open the [live app](https://followup-indol-seven.vercel.app) → **Try the demo** (a private copy with sample jobs, no signup).
+2. Go to **Automations** → press **Send it** on "A customer texts". The message is read by AI, flagged as an emergency, matched to a customer, saved with their own words, and an alert fires (sound in the app, a push notification if alerts are on).
+3. Back on the **Call list**, it's on top, with a dark emergency bar that re-alerts every 3 minutes until you press **I'm on it**.
+4. Scroll **Automations** to see the real **emergency email** and the **7 AM call-list email** FollowUp sends.
+
 ## What it does
 
-<table>
-<tr>
-<td width="50%"><img src="docs/screenshots/call-list.png" alt="Call list" /><br/><b>Call list</b>: the one screen she opens every morning. A "Call first" card, a reason on every row, one-tap <i>No answer → tomorrow</i>, <i>Coming up</i>, time to call back.</td>
-<td width="50%"><img src="docs/screenshots/inbox.png" alt="Inbox" /><br/><b>Inbox</b>: every request in the customer's own words (voicemail transcripts included), filtered by how it arrived. Spam is filed away.</td>
-</tr>
-<tr>
-<td><img src="docs/screenshots/job.png" alt="Job page" /><br/><b>Job page</b>: call/text, the next step as one question, what the customer said, an AI-drafted follow-up text, edit, notes, history, the customer's other jobs.</td>
-<td><img src="docs/screenshots/all-jobs.png" alt="All jobs" /><br/><b>All jobs</b>: separated by her stages, with counts and dollars per stage, search and CSV export.</td>
-</tr>
-<tr>
-<td><img src="docs/screenshots/schedule.png" alt="Schedule" /><br/><b>Schedule</b>: booked visits by day, arrival window and technician; "said yes, needs a date".</td>
-<td><img src="docs/screenshots/numbers.png" alt="Numbers" /><br/><b>Numbers</b>: open jobs, money waiting, won/lost, quote win rate, time to call back, sources, lost reasons.</td>
-</tr>
-<tr>
-<td><img src="docs/screenshots/connect.png" alt="Connect" /><br/><b>Connect phone & email</b>: one-time setup per channel, plus a simulator that sends a test text, email or voicemail (or a real recording) through the real pipeline.</td>
-<td align="center"><img src="docs/screenshots/phone-call-list.png" alt="Phone" width="240" /><br/><b>Phone-first</b>: installable as an app (needed for iPhone push alerts).</td>
-</tr>
-</table>
+| Screen | For Denise |
+|---|---|
+| **Call list** | Who to call today and why, emergencies first, an AI "today" brief, one-tap *No answer → tomorrow*, *Coming up*, time to call back |
+| **Automations** | Everything that happens by itself, with a way to watch each one |
+| **Inbox** | Every call, text, email and website request in the customer's own words |
+| **Job page** | Call / text, the next step as one question, what the customer said, AI-drafted follow-up, history with dates |
+| **All jobs · Schedule · Numbers** | Stages, visits by day / window / technician, money and why jobs were lost |
+| **Settings → Connect** | One-time setup for the website form, referrals, email and a phone number |
 
 **Also:** public request form (`/r/<code>`) with an "equipment is down" box · referral links (`?ref=Tony`) · paste a message and AI fills the job · repeat customers recognised by phone · lost reasons from a fixed list · 3 unanswered tries → "mark lost?" (never automatic) · themed date picker with quick picks · password reset · one-click private demo.
 
@@ -330,9 +326,9 @@ I built FollowUp with Claude Code as the engineer and myself as the product owne
 
 | Practice | What it looked like here |
 |---|---|
-| **Context before code** | Wrote [PRD](docs/PRD.md), [TRD](docs/TRD.md), [system design](docs/SYSTEM-DESIGN.md), [edge cases](docs/EDGE-CASES.md) and a [`CLAUDE.md`](CLAUDE.md) with the rules of the project *before* the first line of code, so every session started with the same understanding. |
+| **Context before code** | Wrote the [PRD](docs/PRD.md), [TRD](docs/TRD.md), [system design](docs/SYSTEM-DESIGN.md) and [edge cases](docs/EDGE-CASES.md) *before* the first line of code, so every session started from the same understanding of Denise's problem. |
 | **Every feature traced to her words** | The [decisions log](docs/DECISIONS.md) (22 entries) records each choice, why, and the rejected alternative, e.g. "rules decide the call list, not AI". |
-| **Tools wired in, not pasted in** | Plugins: `frontend-design`, `feature-dev`, `code-review`, `security-guidance`. MCP / CLIs: Supabase (migrations pushed from the terminal), Vercel (deploys, env checks), Context7 (current library docs), a browser for verification. Custom slash commands for verify / explain / demo data. |
+| **Tools wired in, not pasted in** | Plugins: `frontend-design`, `feature-dev`, `code-review`, `security-guidance`. MCP / CLIs: Supabase (migrations pushed from the terminal), Vercel (deploys, env checks), Context7 (current library docs), a browser for verification. |
 | **Verify, don't trust** | After each feature: unit tests, Playwright, scripted click-throughs in headless Chrome, and screenshots at laptop and phone width, reviewed before every deploy. Bugs found this way included a React 19 form reset that lost typed input and a stepper rendering glitch. |
 | **Security review on every commit** | The `security-guidance` hook reviewed each commit; 12 findings, each fixed and proven with an attack test (e.g. 5 simultaneous "send" clicks → exactly 1 email). |
 | **Research, then judgment** | Looked at award-winning SaaS sites for the visual direction and at other approaches to the same brief for gaps; took ideas only where they traced back to Denise's call, and wrote everything fresh. |

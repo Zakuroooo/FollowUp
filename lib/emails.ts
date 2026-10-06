@@ -27,7 +27,7 @@ ${job.urgent ? `<div style="background:#b4232f;color:#fff;border-radius:10px;pad
 <p style="margin:0 0 16px;color:#3c3f48">${esc(job.customer_name)} · ${tel(job.phone)}</p>
 <p style="font-size:16px;line-height:1.5;margin:0 0 20px">${esc(job.issue)}</p>
 ${button(link, job.urgent ? "Open it and call now" : "Open the job")}
-<p style="color:#71737d;font-size:13px;margin:16px 0 0">Came in through your website form. It's already on today's call list.</p>`);
+<p style="color:#71737d;font-size:13px;margin:16px 0 0">Came in by ${{ call: "phone call", web_form: "your website form", text: "text message", email: "email", referral: "a referral", repeat: "a repeat customer" }[job.source] ?? "a new request"}. It's already on today's call list.</p>`);
   const text = `${job.urgent ? "EMERGENCY - " : ""}${who}\n${job.customer_name} ${job.phone ?? ""}\n\n${job.issue ?? ""}\n\nOpen: ${link}`;
   // Shown as "Tony Russo (via FollowUp)", and Reply goes straight to the customer when they gave an email.
   return { to, subject, html, text, replyTo, fromName: `${job.customer_name} (via FollowUp)` };
