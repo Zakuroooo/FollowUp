@@ -53,6 +53,7 @@ export interface Profile {
   is_guest: boolean;
   digest_sent_on: string | null;
   weekend_sent_on?: string | null;
+  numbers_token?: string | null;
   inbound_token: string;
   techs: string[];
 }
