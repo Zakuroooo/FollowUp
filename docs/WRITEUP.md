@@ -48,7 +48,7 @@ flowchart LR
 | 4 | **Friday 3 PM check**: anything still on the list or due Saturday–Monday gets one reminder before the weekend | "By Monday they had called someone else" |
 | 5 | **All five channels in one place**: website form and referral links work now; email, texts and calls (recorded and written out) work once forwarding / a phone number is connected | "Scattered in five places" |
 | 6 | **7 AM list** by email and phone notification | "Wake up and know…" |
-| 7 | **Numbers**: open jobs, money waiting on a yes, wins, losses and why, time to call back | Her husband's question |
+| 7 | **Numbers**: open jobs, money waiting on a yes, wins, losses and why, time to call back. One button makes a **read-only link she can send her husband** (no login, no customer names). | Her husband's question |
 | 8 | **Tech + arrival window** on a booked visit, and a 14-day view | "Nice later", so it's kept to one field on the job, not a dispatch system |
 
 **What Denise sees on day one:** the Call list. Everything else is one tap away and can be ignored. The **Try it** page (pretend to be a customer) appears only in the demo, because a real business gets real requests.

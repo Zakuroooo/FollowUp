@@ -60,7 +60,7 @@ Denise runs a commercial refrigeration repair company: 4 technicians, 15–20 ne
 | "Wake up and know who to call" | The **Call list**: who to call, why, emergencies first. Also as a **7 AM email + phone alert** |
 | "Freezer down… by Monday they called someone else" | **Emergency alerts** to her phone instantly, **repeating every 3 minutes** until she acts, and a **Friday 3 PM check** for anything that would wait until Monday |
 | "Did I send the quote? Did they say yes?" | Her own stage names, one-tap next step, full history on every job |
-| "My husband keeps asking for numbers" | **Numbers**: money waiting, win rate, time to call back, why jobs are lost |
+| "My husband keeps asking for numbers" | **Numbers**: money waiting, win rate, time to call back, why jobs are lost, and a **read-only link** she can send him |
 | Tech scheduling: "nice later" | Kept simple: assign a tech + arrival window, a 14-day **Schedule** |
 
 ---
@@ -233,6 +233,7 @@ erDiagram
     text digest_email "confirmed only"
     date digest_sent_on "once a day"
     date weekend_sent_on "once a Friday"
+    text numbers_token UK "read-only Numbers link"
     bool is_guest
   }
   JOBS {

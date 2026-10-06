@@ -37,7 +37,8 @@ flowchart LR
 | A12 | On a job → **Draft a message** | A short, ready-to-send text. **Text** opens your phone's messages with the number filled in. |
 | A13 | **Try it** → *See the emails Denise gets* | The emergency email and the 7 AM list email, exactly as they're sent. |
 | A14 | **All jobs** → search a name; **Export CSV** | The job is found; a spreadsheet downloads. |
-| A15 | Sidebar → **Fresh sample jobs** | The demo resets to a clean sample week. |
+| A15 | **Numbers** → **Create a link** → open the link in a private window | A read-only Numbers page with no login and no customer names. **Turn the link off** → the link shows "not found". |
+| A16 | Sidebar → **Fresh sample jobs** | The demo resets to a clean sample week. |
 
 ## Part B: a real account (email, notifications, the website form)
 
@@ -83,6 +84,7 @@ Each one shows up in the Inbox and on the Call list, with a notification. Send t
 | `curl https://followup-indol-seven.vercel.app/api/cron/digest` | `401 unauthorized` |
 | Send a text to `<hook>/sms` with a wrong token in the URL | `404` |
 | Submit the website form 6 times in a row | The 6th is refused (5 per 10 minutes) |
+| Open `/n/anything-made-up-1234567890` | "Not found" |
 | Type `<b>hi</b>` as a customer name | Shown as text, never as bold, in the app and in emails |
 
 ## Automated tests
