@@ -33,7 +33,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 -left-20 size-80 rounded-full bg-brand/30 blur-[80px]" />
         <Sparkles className="absolute inset-0 h-full w-full opacity-70" />
         <Link href="/app" className="relative px-2.5 pb-7"><Logo light /></Link>
-        <div className="relative"><NavLinks callCount={calls} /></div>
+        <div className="relative"><NavLinks callCount={calls} demo={profile.is_guest} /></div>
         <div className="relative mt-auto border-t border-white/10 px-2.5 pt-4">
           <div className="flex items-center gap-2.5">
             <span className="grid size-8 place-items-center rounded-full bg-brand text-[13px] font-semibold text-white">{initial}</span>
@@ -78,7 +78,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {children}
       </main>
       <LiveRefresh latest={latest} waiting={waiting.length} />
-      <MobileNav />
+      <MobileNav demo={profile.is_guest} />
     </div>
   );
 }

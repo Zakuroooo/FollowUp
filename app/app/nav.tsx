@@ -6,7 +6,7 @@ const ITEMS = [
   { href: "/app", label: "Call list", short: "Calls", icon: "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" },
   { href: "/app/jobs", label: "All jobs", short: "Jobs", icon: "M4 6h16M4 12h16M4 18h10" },
   { href: "/app/inbox", label: "Inbox", short: "Inbox", icon: "M4 13h4l2 3h4l2-3h4M4 13l2.5-7h11l2.5 7v6H4z" },
-  { href: "/app/automations", label: "Try it", short: "Try it", icon: "M13 3L4 14h7l-1 7 9-11h-7z" },
+  { href: "/app/automations", label: "Try it", short: "Try it", icon: "M13 3L4 14h7l-1 7 9-11h-7z", demoOnly: true },
   { href: "/app/schedule", label: "Schedule", short: "Schedule", icon: "M5 5h14v15H5zM5 10h14M9 3v4M15 3v4", desktopOnly: true },
   { href: "/app/numbers", label: "Numbers", short: "Numbers", icon: "M5 20V10M12 20V4M19 20v-7", desktopOnly: true },
   { href: "/app/jobs/new", label: "Add a job", short: "Add", icon: "M12 5v14M5 12h14" },
@@ -19,11 +19,14 @@ function active(path: string, href: string) {
   return path === href;
 }
 
-export function NavLinks({ callCount }: { callCount: number }) {
+/** "Try it" pretends to be a customer, so it only shows in the demo. A real business gets real requests. */
+const itemsFor = (demo: boolean) => ITEMS.filter((i) => demo || !("demoOnly" in i));
+
+export function NavLinks({ callCount, demo }: { callCount: number; demo: boolean }) {
   const path = usePathname();
   return (
     <nav className="flex flex-col gap-0.5" aria-label="Main">
-      {ITEMS.map((i) => {
+      {itemsFor(demo).map((i) => {
         const on = active(path, i.href);
         return (
           <Link key={i.href} href={i.href} aria-current={on ? "page" : undefined}
@@ -40,11 +43,11 @@ export function NavLinks({ callCount }: { callCount: number }) {
   );
 }
 
-export function MobileNav() {
+export function MobileNav({ demo }: { demo: boolean }) {
   const path = usePathname();
   return (
     <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-card/90 backdrop-blur-md md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-      {ITEMS.filter((i) => !("desktopOnly" in i)).map((i) => {
+      {itemsFor(demo).filter((i) => !("desktopOnly" in i)).map((i) => {
         const on = active(path, i.href);
         return (
           <Link key={i.href} href={i.href} aria-current={on ? "page" : undefined}
