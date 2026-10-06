@@ -17,9 +17,9 @@ built from one discovery call with its owner.
 ![Tailwind](https://img.shields.io/badge/Tailwind_v4-06B6D4?logo=tailwindcss&logoColor=fff)
 ![Tests](https://img.shields.io/badge/tests-27_unit_·_4_e2e-2b5cff)
 
-<a href="https://followup-indol-seven.vercel.app/walkthrough.mp4"><img src="docs/preview.gif" alt="A customer texts that their freezer stopped; it arrives on the call list as an emergency with an alert" width="860" /></a>
+<a href="https://followup-indol-seven.vercel.app/explainer.mp4"><img src="docs/preview.gif" alt="A customer texts that their freezer stopped; it arrives on the call list as an emergency with an alert" width="860" /></a>
 
-**▶ [Watch the 2-minute narrated walkthrough](https://followup-indol-seven.vercel.app/walkthrough.mp4)**
+**▶ [Watch the 4-minute narrated explainer: the whole app, start to end](https://followup-indol-seven.vercel.app/explainer.mp4)**
 
 </div>
 
