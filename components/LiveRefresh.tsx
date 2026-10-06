@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { playAlert, unlockSound } from "@/lib/sound";
 
 /**
  * Keeps an open tab current: refreshes every 45 s while visible (and when you come back to the tab).
@@ -11,6 +12,14 @@ export function LiveRefresh({ latest }: { latest: { id: string; at: string; name
   const router = useRouter();
   const seen = useRef(latest?.at ?? "");
   const [notice, setNotice] = useState<typeof latest>(null);
+
+  // Browsers allow sound only after a tap/click/key: unlock the audio engine on the first one.
+  useEffect(() => {
+    const unlock = () => unlockSound();
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    return () => { window.removeEventListener("pointerdown", unlock); window.removeEventListener("keydown", unlock); };
+  }, []);
 
   useEffect(() => {
     const tick = () => { if (document.visibilityState === "visible") router.refresh(); };
@@ -26,10 +35,16 @@ export function LiveRefresh({ latest }: { latest: { id: string; at: string; name
     }
   }, [latest]);
 
+  // New request: play the sound and flash the tab title until she looks.
   useEffect(() => {
     if (!notice) return;
-    const t = setTimeout(() => setNotice(null), 10_000);
-    return () => clearTimeout(t);
+    playAlert(notice.urgent);
+    const original = document.title;
+    const label = notice.urgent ? "(!) Emergency request" : "(1) New request";
+    let on = false;
+    const flash = setInterval(() => { document.title = (on = !on) ? label : original; }, 1000);
+    const t = setTimeout(() => setNotice(null), 15_000);
+    return () => { clearTimeout(t); clearInterval(flash); document.title = original; };
   }, [notice]);
 
   if (!notice) return null;

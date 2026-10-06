@@ -286,7 +286,7 @@ export async function addNote(id: string, form: FormData) {
   const user = await currentUser();
   if (!user) redirect("/login");
   const note = String(form.get("note") ?? "").trim().slice(0, 300);
-  if (!note) return;
+  if (!note || !(await getJob(id))) return; // only your own job (RLS also enforces this)
   await event(id, user.id, "note", `Note: ${note}`);
   refresh(id);
 }

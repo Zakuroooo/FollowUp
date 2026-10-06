@@ -9,6 +9,7 @@ import type { Stage } from "@/lib/types";
 import { money, PhoneIcon } from "@/components/ui";
 import { CallListIllustration } from "@/components/Illustration";
 import { Sparkles } from "@/components/Sparkles";
+import { AlertsToggle } from "@/components/AlertsToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,7 @@ export default async function CallList() {
 
   return (
     <div className="mx-auto max-w-[1240px]">
+      <AlertsToggle compact />
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-[13px] font-medium text-brand">{date}</p>

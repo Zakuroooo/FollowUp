@@ -21,6 +21,7 @@ export default async function SettingsPage() {
         formUrl={formUrl}
         emailOn={!!e.RESEND_API_KEY}
         aiOn={!!e.GROQ_API_KEY}
+        pushOn={!!(e.NEXT_PUBLIC_VAPID_PUBLIC_KEY && e.VAPID_PRIVATE_KEY)}
       />
     </div>
   );

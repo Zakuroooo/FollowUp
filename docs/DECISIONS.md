@@ -22,3 +22,5 @@
 | D18 | Profile columns locked at the database (column GRANTs) | RLS says *which rows*; GRANTs say *which columns* — users can't flip is_guest or the sent-today marker | Trusting the app code alone |
 | D19 | AI: Groq `openai/gpt-oss-20b`, JSON mode, cache + daily cap, rule fallbacks for every feature | Fast and cheap; the app must work with no key and degrade, not break | Making AI a hard dependency |
 | D20 | Nothing is ever sent to a customer automatically | Denise owns the relationship; drafts are copied/sent by her | Auto-texting customers |
+| D21 | Device alerts via **Web Push** (+ sound in the open app), not SMS | Free, instant, works with the app closed, emergencies stay on screen; SMS needs a paid US number | Twilio SMS now (next step) |
+| D22 | Push endpoints allow-listed to real push services in the database | A stored "device" URL is fetched by our server: without the allow-list it's an SSRF hole | Trusting whatever the browser sends |

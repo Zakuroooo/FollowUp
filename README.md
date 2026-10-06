@@ -29,11 +29,13 @@ A working prototype for Denise, who runs a commercial refrigeration repair compa
 | Feature | How it works |
 |---|---|
 | **Website request form** (`/r/<code>`) | A public "Request service" page for her website. Requests land straight on the call list, with an "Equipment is down" box for emergencies. Spam trap, rate limit (5 per visitor per 10 min), and a resubmission adds to the same request instead of creating a duplicate. |
+| **Device alerts (push)** | One tap ("Turn on alerts") and every website request buzzes her phone or computer, even with FollowUp closed. Emergencies stay on screen until she taps them and open the job directly. Installable as an app (needed for iPhone alerts, iOS 16.4+). The open app also plays a chime (a triple beep for emergencies) and flashes the tab title. |
 | **Instant alert email** | The moment a website request arrives, she gets an email; the subject starts with **EMERGENCY** when equipment is down. Saved first, emailed second, so an email failure never loses a request. |
 | **7 AM call list email** | The same list as the home screen, in her inbox every morning (Vercel Cron). At most once a day per business. |
 | **Paste a message → job** (AI) | Paste a text, voicemail transcript or email; the form fills itself (name, business, phone, problem, urgency). She checks, then saves. |
 | **Emergency triage** (AI) | Rules decide first. Only when the rules are unsure does the AI look, and it can only make a job **more** urgent, never less: a missed emergency costs more than a false alarm. |
 | **Draft a follow-up** (AI) | One tap writes a short, editable text to chase a quote or confirm a visit. Copy it or open it in Messages. Nothing is ever sent to a customer automatically. |
+| **Also in V1** | Edit a job's details after saving, internal notes ("ask for Mike") that don't count as contact, the customer's other jobs on the job page, business phone shown on the request form ("Equipment down? Call us now"), a setup reminder until it's filled in, the call list refreshing itself with a "new request" notice, show password, forgot/reset password. |
 | **Settings** | Request-form link (copy / preview), business name, time zone ("today" is the shop's day, not the server's), morning email on/off, and what's switched on. |
 
 Every AI feature has a plain fallback (regex extraction, rules, templates), so the app works fully without an AI key. AI answers are cached and capped per business per day.
@@ -63,14 +65,14 @@ Browser ── Next.js 15 (App Router, Server Components, Server Actions) ──
               │  middleware: session + route protection                    │  Row-Level Security on every table
               │  lib/rules.ts: call-list logic (pure, tested)               │  column GRANTs on profiles
               │  lib/ai.ts: Groq (JSON mode) + cache + daily cap            │  anonymous auth = private demo
-              │  lib/email.ts: Resend                                        │
+              │  lib/email.ts: Resend · lib/push.ts: Web Push (VAPID)        │
               └─ Vercel Cron: 7 AM email (11:00 UTC = 7 AM Eastern), daily keep-alive
 ```
 
 - **Privacy is enforced by the database**, not just the code: every row has an `owner_id`, and RLS policies only return `owner_id = auth.uid()`. A bug in a query can't leak another business's customers.
 - **Guest demo** = Supabase anonymous sign-in + a seed function, so every reviewer gets their own private sandbox.
 - **Server-only admin client** (service role) is used only where there is no signed-in user: the public form, the cron jobs and the AI cache. `server-only` makes the build fail if it is ever imported into browser code.
-- **Abuse limits**: emails only go to the account's own verified login address (none from the demo); the public form can't edit jobs it didn't create; profile fields like `is_guest` are locked at the database with column GRANTs.
+- **Abuse limits**: device-alert endpoints must belong to a real push service (database CHECK, so no SSRF), emails only go to the account's own verified login address (none from the demo); the public form can't edit jobs it didn't create; profile fields like `is_guest` are locked at the database with column GRANTs.
 
 More: [PRD](docs/PRD.md) · [TRD](docs/TRD.md) · [System design](docs/SYSTEM-DESIGN.md) · [Edge cases](docs/EDGE-CASES.md) · [Decisions](docs/DECISIONS.md) · [How AI was used to build it](docs/AI-WORKFLOW.md)
 
@@ -102,7 +104,7 @@ GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lin
 
 1. Create a Supabase project, then `npx supabase link --project-ref <ref>` and `npx supabase db push`.
 2. In Supabase → Authentication → Sign In / Providers, turn on **Anonymous sign-ins** (for the demo).
-3. In Vercel → Settings → Environment Variables, add the variables from [`.env.example`](.env.example). `CRON_SECRET` is required for the 7 AM email; `GROQ_API_KEY` and `RESEND_API_KEY` switch on AI and email.
+3. Run `bash scripts/setup-vercel-env.sh`: it copies the Supabase keys into Vercel, generates the push keys and cron secret, and asks for the Groq / Resend keys (hidden input). Or add the variables from [`.env.example`](.env.example) by hand. `CRON_SECRET` is required for the 7 AM email; `GROQ_API_KEY` and `RESEND_API_KEY` switch on AI and email.
 4. `vercel deploy --prod`. Crons are defined in [`vercel.json`](vercel.json).
 
 ## Deliberately left out

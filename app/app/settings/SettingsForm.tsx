@@ -3,10 +3,11 @@ import { useActionState, useState } from "react";
 import { saveSettings, sendDigestNow, type SettingsState } from "@/lib/actions/settings";
 import { TIMEZONES } from "@/lib/timezones";
 import { Submit } from "@/components/Submit";
+import { AlertsToggle } from "@/components/AlertsToggle";
 
 type P = { business_name: string; business_phone: string; timezone: string; digest_email: string; digest_enabled: boolean; is_guest: boolean };
 
-export function SettingsForm({ profile, formUrl, emailOn, aiOn }: { profile: P; formUrl: string; emailOn: boolean; aiOn: boolean }) {
+export function SettingsForm({ profile, formUrl, emailOn, aiOn, pushOn }: { profile: P; formUrl: string; emailOn: boolean; aiOn: boolean; pushOn: boolean }) {
   const [saved, save] = useActionState<SettingsState, FormData>(saveSettings, {});
   const [sent, send] = useActionState<SettingsState>(sendDigestNow, {});
   const [copied, setCopied] = useState(false);
@@ -18,6 +19,7 @@ export function SettingsForm({ profile, formUrl, emailOn, aiOn }: { profile: P; 
   return (
     <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
       <div className="flex flex-col gap-6">
+        <AlertsToggle />
         <section className="sheen relative overflow-hidden rounded-2xl bg-[linear-gradient(120deg,#09090b_0%,#0a0d1c_50%,#0f1c45_100%)] p-6 text-white md:p-7" aria-labelledby="form-h">
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-32 -right-24 size-80 rounded-full bg-brand/35 blur-[80px]" />
           <div className="relative z-10">
@@ -92,6 +94,7 @@ export function SettingsForm({ profile, formUrl, emailOn, aiOn }: { profile: P; 
           {[
             ["Call list, stages, history", true, "Always on"],
             ["Website request form", true, "Live at the link on the left"],
+            ["Device alerts (push)", pushOn, pushOn ? "Ready: turn them on per device, above" : "Needs push keys on the server"],
             ["Email alerts and 7 AM list", emailOn, emailOn ? "Sending" : "Needs an email key on the server"],
             ["AI: read pasted messages, spot emergencies, draft follow-ups", aiOn, aiOn ? "On, with a daily limit" : "Off, simple rules are used instead"],
           ].map(([label, on, note]) => (

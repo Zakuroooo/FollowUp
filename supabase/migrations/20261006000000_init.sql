@@ -63,6 +63,17 @@ create table public.ai_usage (
   calls    int not null default 0,
   primary key (owner_id, day)
 );
+-- Devices that asked for alerts (Web Push). One row per browser/phone that said "Allow".
+create table public.push_subscriptions (
+  id         bigint generated always as identity primary key,
+  owner_id   uuid not null references public.profiles (id) on delete cascade,
+  endpoint   text not null unique check (length(endpoint) <= 1000),
+  p256dh     text not null check (length(p256dh) <= 200),
+  auth       text not null check (length(auth) <= 100),
+  created_at timestamptz not null default now()
+);
+create index push_owner_idx on public.push_subscriptions (owner_id);
+
 -- Public request form: one row per submission attempt, used only to rate-limit (server-side, service role).
 create table public.form_hits (
   id      bigint generated always as identity primary key,
@@ -86,6 +97,7 @@ alter table public.job_events enable row level security;
 alter table public.ai_usage   enable row level security;
 alter table public.ai_cache   enable row level security;   -- no policies: server (service role) only
 alter table public.form_hits  enable row level security;   -- no policies: server (service role) only
+alter table public.push_subscriptions enable row level security;
 
 create policy "own profile read" on public.profiles
   for select using (id = auth.uid());
@@ -98,6 +110,10 @@ grant update (business_name, business_phone, timezone, digest_enabled) on public
 create policy "own jobs" on public.jobs
   for all using (owner_id = auth.uid()) with check (owner_id = auth.uid());
 create policy "own events" on public.job_events
+  for all using (owner_id = auth.uid())
+  -- a history entry may only be attached to a job you own
+  with check (owner_id = auth.uid() and exists (select 1 from public.jobs j where j.id = job_id and j.owner_id = auth.uid()));
+create policy "own devices" on public.push_subscriptions
   for all using (owner_id = auth.uid()) with check (owner_id = auth.uid());
 create policy "own usage" on public.ai_usage
   for select using (owner_id = auth.uid());

@@ -17,6 +17,9 @@ const schema = z.object({
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default("FollowUp <onboarding@resend.dev>"),
   CRON_SECRET: z.string().optional(),
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string().optional(),
+  VAPID_PRIVATE_KEY: z.string().optional(),
+  VAPID_SUBJECT: z.string().default("mailto:alerts@followup.app"),
 });
 
 let cached: z.infer<typeof schema> | null = null;

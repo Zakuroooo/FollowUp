@@ -14,6 +14,7 @@ import { triageAI } from "@/lib/ai";
 import { phoneKey } from "@/lib/phone";
 import { sendEmail } from "@/lib/email";
 import { alertEmail } from "@/lib/emails";
+import { sendPushTo } from "@/lib/push";
 import type { Job } from "@/lib/types";
 
 export type IntakeState = { ok?: boolean; error?: string; values?: Record<string, string> };
@@ -95,8 +96,17 @@ export async function submitRequest(slug: string, _prev: IntakeState, form: Form
   }
 
   // 7. Saved. Now tell the owner (a failed email is logged, never shown to the customer).
-  if (alert && job && profile.digest_email && !profile.is_guest) {
-    await sendEmail(alertEmail(profile.digest_email, job, input.email ?? undefined));
+  if (alert && job) {
+    const who = job.business ?? job.customer_name;
+    await Promise.all([
+      // Device alert: goes only to devices the owner turned on themselves, so it's safe for demos too.
+      sendPushTo(profile.id, {
+        title: job.urgent ? `EMERGENCY: ${who}` : `New request: ${who}`,
+        body: `${job.issue ?? ""}${job.phone ? ` · ${job.phone}` : ""}`.slice(0, 180),
+        url: `/app/jobs/${job.id}`, urgent: job.urgent, tag: `job-${job.id}`,
+      }),
+      profile.digest_email && !profile.is_guest ? sendEmail(alertEmail(profile.digest_email, job, input.email ?? undefined)) : null,
+    ]);
   }
   return { ok: true };
 }
