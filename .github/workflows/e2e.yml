@@ -1,0 +1,24 @@
+name: End-to-end
+# Real browser tests against a throwaway local Supabase. Run on demand from the Actions tab
+# (they also run locally with `npm run e2e`).
+on:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: End-to-end (real browser + throwaway local Supabase)
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - uses: supabase/setup-cli@v1
+      - run: npm ci
+      - run: supabase start -x studio,imgproxy
+      - name: Write local keys
+        run: |
+          supabase status -o env | sed -n 's/^API_URL=/NEXT_PUBLIC_SUPABASE_URL=/p; s/^ANON_KEY=/NEXT_PUBLIC_SUPABASE_ANON_KEY=/p; s/^SERVICE_ROLE_KEY=/SUPABASE_SERVICE_ROLE_KEY=/p' | tr -d '"' >> .env.local
+          echo "APP_URL=http://localhost:3200" >> .env.local
+      - run: npm run build && (npx next start -p 3200 &) && npx wait-on http://localhost:3200
+      - run: npx playwright test
