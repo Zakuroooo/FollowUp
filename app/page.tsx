@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TOUR_VIDEO } from "@/lib/media";
 import { tryDemo } from "@/lib/actions/auth";
 import { LogoMark, PhoneIcon } from "@/components/ui";
 import { ParticleField } from "@/components/ParticleField";
@@ -37,7 +38,8 @@ export default function Landing() {
             <span className="text-[17px] font-semibold tracking-[-0.02em]">FollowUp</span>
           </Link>
           <nav className="flex items-center gap-1 text-sm">
-            <a href="#how" className="hidden rounded-full px-4 py-2 text-white/60 hover:text-white sm:inline-flex">How it works</a>
+            <a href="#tour" className="hidden rounded-full px-4 py-2 text-white/60 hover:text-white sm:inline-flex">Watch the tour</a>
+            <a href="#how" className="hidden rounded-full px-4 py-2 text-white/60 hover:text-white md:inline-flex">How it works</a>
             <Link href="/login" className="rounded-full px-4 py-2 text-white/60 hover:text-white">Log in</Link>
             <form action={tryDemo}><button className="rounded-full border border-white/15 px-4 py-2 font-medium hover:bg-white/10">Try the demo</button></form>
           </nav>
@@ -90,6 +92,21 @@ export default function Landing() {
             </div>
           ))}
         </dl></Reveal>
+      </section>
+
+      {/* TOUR: the narrated video, start to end */}
+      <section id="tour" className="mx-auto max-w-7xl scroll-mt-8 px-5 pb-24 md:px-8">
+        <Reveal>
+          <h2 className="max-w-2xl text-[34px] font-semibold leading-[1.05] tracking-[-0.035em] [text-wrap:balance] md:text-[52px]">
+            See it in 4 minutes. <span className="text-white/40">Narrated, start to end.</span>
+          </h2>
+          <p className="mt-4 max-w-xl text-white/55">The call list, a job, an emergency alert, a customer texting in, the emails, and how calls and texts arrive in real life.</p>
+        </Reveal>
+        <Reveal delay={120} className="mt-10 overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_30px_120px_-40px_rgba(43,92,255,.55)]">
+          <video controls preload="none" playsInline poster="/tour-poster.jpg" className="block aspect-video w-full" aria-label="FollowUp: a 4-minute narrated tour">
+            <source src={TOUR_VIDEO} type="video/mp4" />
+          </video>
+        </Reveal>
       </section>
 
       {/* HOW */}
@@ -159,7 +176,7 @@ export default function Landing() {
             {[
               ["Requests come in by themselves", "Calls are recorded and written out, voicemails too. Texts, emails, the website form and referrals all land in one list, in the customer's own words."],
               ["One list every morning", "At 7 AM: who to call and why, emergencies first. One tap after each call: quote sent, they said yes, no answer."],
-              ["Alerts that don't let go", "An emergency buzzes her phone and plays a sound, then again every 3 minutes until someone acts on it."],
+              ["Alerts that don't let go", "An emergency buzzes her phone and plays a sound, then again every 3 minutes until someone acts on it. On Fridays at 3 PM, a check for anything that would otherwise wait until Monday."],
               ["Book it and see the numbers", "Pick a day, arrival window and technician. The Numbers page shows money waiting, wins, losses and why."],
             ].map(([t, d], i) => (
               <li key={t} className="bg-[#050506] p-7">
