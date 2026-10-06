@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getJob, getProfile, listEvents, messagesForJob, otherJobsFor } from "@/lib/data";
-import { addNote, logCall, moveBack, moveStage, noAnswer, setReminder, setVisitDate, toggleUrgent } from "@/lib/actions/jobs";
+import { acknowledge, addNote, logCall, moveBack, moveStage, noAnswer, setReminder, setVisitDate, toggleUrgent } from "@/lib/actions/jobs";
 import { ago } from "@/lib/rules";
 import { FLOW, LOST_REASONS, SOURCE_LABEL, STAGE_LABEL, STAGE_SHORT, isOpen, previousStage } from "@/lib/stages";
 import { dialable } from "@/lib/phone";
@@ -92,6 +92,9 @@ export default async function JobPage({ params, searchParams }: {
                   <PhoneIcon /> Call {job.phone}
                 </a>
                 <a href={`sms:${tel}`} className="btn btn-lg rounded-full border border-white/15 px-6 text-white hover:bg-white/10">Text</a>
+                {hot && job.stage === "new" && !job.acknowledged_at && !job.first_response_at && (
+                  <form action={acknowledge.bind(null, id)}><Submit className="btn btn-lg rounded-full px-5 text-white/80 hover:bg-white/10">I&apos;m on it (stop alerts)</Submit></form>
+                )}
               </div>
             )}
           </div>

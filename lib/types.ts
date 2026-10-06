@@ -22,6 +22,9 @@ export interface Job {
   lost_reason: string | null;
   tech: string | null;
   attempts: number;
+  acknowledged_at: string | null;
+  alert_count: number;
+  last_alert_at: string | null;
   notes: string | null;
   last_contact_at: string | null;
   first_response_at: string | null;

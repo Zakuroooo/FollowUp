@@ -79,10 +79,10 @@ export async function ingest(input: IngestInput): Promise<IngestResult> {
   let dup: Job | undefined;
   if (input.door === "email") {
     if (input.fromEmail) {
-      const { data: prior } = await db.from("messages").select("job_id").eq("owner_id", input.ownerId).eq("from_email", input.fromEmail.toLowerCase()).not("job_id", "is", null).order("at", { ascending: false }).limit(5);
+      const { data: prior } = await db.from("messages").select("job_id").eq("owner_id", input.ownerId).eq("channel", "email").eq("outcome", "new_job").eq("from_email", input.fromEmail.toLowerCase()).not("job_id", "is", null).order("at", { ascending: false }).limit(5);
       const ids = [...new Set((prior ?? []).map((m) => m.job_id as string))];
       if (ids.length) {
-        const { data } = await db.from("jobs").select("*").in("id", ids).not("stage", "in", "(done,lost)").limit(1);
+        const { data } = await db.from("jobs").select("*").eq("owner_id", input.ownerId).in("id", ids).not("stage", "in", "(done,lost)").limit(1);
         dup = (data as Job[] | null)?.[0];
       }
     }
@@ -117,6 +117,7 @@ export async function ingest(input: IngestInput): Promise<IngestResult> {
       issue: (parsed.issue || text).slice(0, 1000),
       notes: [input.referral ? `Referred by ${input.referral}` : null, input.fromEmail ? `Email: ${input.fromEmail}` : null].filter(Boolean).join(" · ") || null,
       urgent, urgency_source, urgency_reason,
+      ...(urgent ? { alert_count: 1, last_alert_at: new Date().toISOString() } : {}), // first alert goes out below
     }).select("*").single();
     if (error || !data) throw new Error(`could not save job: ${error?.message}`);
     job = data as Job;

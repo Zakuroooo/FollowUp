@@ -23,12 +23,12 @@ export function SettingsForm({ profile, formUrl, emailOn, aiOn, pushOn }: { prof
         <section className="sheen relative overflow-hidden rounded-2xl bg-[linear-gradient(120deg,#09090b_0%,#0a0d1c_50%,#0f1c45_100%)] p-6 text-white md:p-7" aria-labelledby="form-h">
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-32 -right-24 size-80 rounded-full bg-brand/35 blur-[80px]" />
           <div className="relative z-10">
-            <h2 id="form-h" className="text-[17px] font-semibold">Your request form</h2>
-            <p className="mt-1 max-w-xl text-sm text-navy-muted">Put this link behind a &ldquo;Request service&rdquo; button on your website. Requests land straight on your call list, and you get an email the moment one arrives.</p>
+            <h2 id="form-h" className="text-[17px] font-semibold">Get requests in automatically</h2>
+            <p className="mt-1 max-w-xl text-sm text-navy-muted">Your website form works now. Connect your phone and email once, and calls, texts and emails turn into jobs by themselves.</p>
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <code className="min-w-0 flex-1 truncate rounded-lg bg-white/10 px-3 py-2.5 font-mono text-[13px] shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)]">{formUrl}</code>
               <button type="button" onClick={copy} className="btn rounded-full bg-white px-5 text-navy hover:bg-white/90">{copied ? "Copied" : "Copy link"}</button>
-              <a href={formUrl} target="_blank" rel="noreferrer" className="btn rounded-full border border-white/15 px-5 text-white hover:bg-white/10">See what customers see</a>
+              <a href="/app/settings/connect" className="btn rounded-full border border-white/15 px-5 text-white hover:bg-white/10">Connect phone &amp; email →</a>
             </div>
           </div>
         </section>

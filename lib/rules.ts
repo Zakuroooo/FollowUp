@@ -179,3 +179,22 @@ export function callbackTime(jobs: Job[], now: Date) {
   const median = hours.length % 2 ? hours[mid] : (hours[mid - 1] + hours[mid]) / 2;
   return { medianHours: Math.round(median * 10) / 10, sample: hours.length, waiting };
 }
+
+/** Re-alert policy for emergencies nobody has acted on. */
+export const REALERT_EVERY_MIN = 3;
+export const REALERT_MAX = 10;
+
+/** Emergencies still waiting for her: urgent, never answered, not acknowledged, under 24 h old. */
+export function waitingEmergencies(jobs: Job[], now: Date): Job[] {
+  return jobs.filter((j) =>
+    j.urgent && j.stage === "new" && !j.first_response_at && !j.acknowledged_at &&
+    now.getTime() - new Date(j.created_at).getTime() < DAY &&
+    !(j.follow_up_on && j.follow_up_on > todayIn("UTC", now)));
+}
+
+/** Of those, which are due for another alert right now. */
+export function dueForRealert(jobs: Job[], now: Date): Job[] {
+  return waitingEmergencies(jobs, now).filter((j) =>
+    j.alert_count < REALERT_MAX &&
+    (!j.last_alert_at || now.getTime() - new Date(j.last_alert_at).getTime() >= (REALERT_EVERY_MIN * 60 - 10) * 1000));
+}

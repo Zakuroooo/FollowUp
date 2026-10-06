@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getProfile, listJobs } from "@/lib/data";
-import { callList, todayIn } from "@/lib/rules";
+import { callList, todayIn, waitingEmergencies } from "@/lib/rules";
 import { logOut } from "@/lib/actions/auth";
-import { loadDemoJobs } from "@/lib/actions/jobs";
+import { acknowledge, loadDemoJobs } from "@/lib/actions/jobs";
+import { dialable } from "@/lib/phone";
+import { PhoneIcon } from "@/components/ui";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { Submit } from "@/components/Submit";
 import { Logo, LogoMark } from "@/components/ui";
@@ -21,6 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const stamp = (j: (typeof jobs)[number]) => (j.last_inbound_at && j.last_inbound_at > j.created_at ? j.last_inbound_at : j.created_at);
   const newest = jobs.reduce<(typeof jobs)[number] | null>((a, j) => (!a || stamp(j) > stamp(a) ? j : a), null);
   const latest = newest ? { id: newest.id, at: stamp(newest), name: newest.business ?? newest.customer_name, urgent: newest.urgent } : null;
+  const waiting = waitingEmergencies(jobs, now);
   const needsSetup = !profile.is_guest && (profile.business_name === "My business" || !profile.business_phone);
 
   return (
@@ -35,11 +38,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <span className="grid size-8 place-items-center rounded-full bg-brand text-[13px] font-semibold text-white">{initial}</span>
             <div className="min-w-0 text-[13px] leading-tight">
               <div className="line-clamp-2 font-semibold">{profile.business_name.replace(/\s*\(demo\)$/, "")}</div>
-              <div className="text-navy-muted">{profile.is_guest ? "Private demo" : profile.digest_email}</div>
+              <div className="text-navy-muted">{profile.is_guest ? "Trying it with sample jobs" : profile.digest_email}</div>
             </div>
           </div>
           <div className="mt-3 flex gap-4 text-[13px]">
-            {profile.is_guest && <form action={loadDemoJobs}><Submit className="text-navy-muted hover:text-white">Reset demo</Submit></form>}
+            {profile.is_guest && <form action={loadDemoJobs}><Submit className="text-navy-muted hover:text-white">Fresh sample jobs</Submit></form>}
             <form action={logOut}><button className="text-navy-muted hover:text-white">Log out</button></form>
           </div>
         </div>
@@ -47,10 +50,23 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
       <header className="sticky top-0 z-10 flex items-center justify-between bg-[linear-gradient(90deg,#09090b,#0c1636)] px-4 py-3 text-white md:hidden">
         <Link href="/app" className="inline-flex items-center gap-2" aria-label="FollowUp"><LogoMark size={26} dark={false} /><span className="font-bold tracking-[-0.02em]">FollowUp</span></Link>
-        <div className="flex items-center gap-3 text-[13px] text-navy-muted">{profile.is_guest && <span className="rounded-md bg-navy-2 px-2 py-0.5">Demo</span>}<form action={logOut}><button className="min-h-10 px-1">Log out</button></form></div>
+        <div className="flex items-center gap-3 text-[13px] text-navy-muted">{profile.is_guest && <span className="rounded-md bg-navy-2 px-2 py-0.5">Sample data</span>}<form action={logOut}><button className="min-h-10 px-1">Log out</button></form></div>
       </header>
 
       <main className="min-w-0 flex-1 px-4 pb-28 pt-6 md:px-8 md:pb-16 md:pt-10 xl:px-12">
+        {waiting.map((j) => {
+          const mins = Math.max(1, Math.round((now.getTime() - new Date(j.created_at).getTime()) / 60_000));
+          const tel = dialable(j.phone);
+          return (
+            <div key={j.id} role="alert" className="mx-auto mb-4 flex max-w-[1240px] flex-wrap items-center gap-3 rounded-xl bg-urgent px-4 py-3 text-white shadow-[0_12px_30px_-12px_rgba(229,72,77,.7)]">
+              <span className="relative flex size-2.5"><span className="absolute inline-flex size-full animate-ping rounded-full bg-white opacity-75" /><span className="relative inline-flex size-2.5 rounded-full bg-white" /></span>
+              <p className="min-w-0 flex-1 text-sm"><span className="font-semibold">Emergency waiting {mins < 60 ? `${mins} min` : `${Math.round(mins / 60)} h`}:</span> {j.business ?? j.customer_name}, {j.issue}</p>
+              {tel && <a href={`tel:${tel}`} className="btn btn-sm rounded-full bg-white text-urgent-ink hover:bg-white/90"><PhoneIcon size={14} /> Call</a>}
+              <a href={`/app/jobs/${j.id}`} className="btn btn-sm rounded-full border border-white/40 text-white hover:bg-white/10">Open</a>
+              <form action={acknowledge.bind(null, j.id)}><Submit className="btn btn-sm rounded-full text-white/90 hover:bg-white/10">I&apos;m on it</Submit></form>
+            </div>
+          );
+        })}
         {needsSetup && (
           <a href="/app/settings" className="mx-auto mb-6 flex max-w-[1240px] flex-wrap items-center justify-between gap-2 rounded-xl border border-brand/25 bg-brand-soft px-4 py-3 text-sm">
             <span><span className="font-semibold">Finish setting up:</span> add your business name and phone so customers see them on your request form.</span>
@@ -59,7 +75,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         )}
         {children}
       </main>
-      <LiveRefresh latest={latest} />
+      <LiveRefresh latest={latest} waiting={waiting.length} />
       <MobileNav />
     </div>
   );

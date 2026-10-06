@@ -8,7 +8,7 @@ import { playAlert, unlockSound } from "@/lib/sound";
  * Keeps an open tab current: refreshes every 45 s while visible (and when you come back to the tab).
  * When a newer job appears (e.g. a website request), shows a notice that links to it.
  */
-export function LiveRefresh({ latest }: { latest: { id: string; at: string; name: string; urgent: boolean } | null }) {
+export function LiveRefresh({ latest, waiting = 0 }: { latest: { id: string; at: string; name: string; urgent: boolean } | null; waiting?: number }) {
   const router = useRouter();
   const seen = useRef(latest?.at ?? "");
   const [notice, setNotice] = useState<typeof latest>(null);
@@ -20,6 +20,13 @@ export function LiveRefresh({ latest }: { latest: { id: string; at: string; name
     window.addEventListener("keydown", unlock, { once: true });
     return () => { window.removeEventListener("pointerdown", unlock); window.removeEventListener("keydown", unlock); };
   }, []);
+
+  // Emergencies nobody has acted on: replay the urgent sound every 3 minutes until she does.
+  useEffect(() => {
+    if (!waiting) return;
+    const id = setInterval(() => playAlert(true), 3 * 60_000);
+    return () => clearInterval(id);
+  }, [waiting]);
 
   // A device alert arrived while the app is open: sound + notice immediately, no waiting for the refresh.
   useEffect(() => {

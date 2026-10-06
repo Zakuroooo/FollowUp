@@ -17,7 +17,7 @@ const button = (href: string, label: string) =>
 
 const tel = (p: string | null) => (p ? `<a href="tel:${esc(p.replace(/[^\d+]/g, ""))}" style="color:#2b5cff;font-weight:600">${esc(p)}</a>` : "no phone given");
 
-export function alertEmail(to: string, job: Job, replyTo?: string): Mail {
+export function alertEmail(to: string, job: Job, replyTo?: string): Mail & { fromName?: string } {
   const who = job.business ?? job.customer_name;
   const subject = job.urgent ? `EMERGENCY: ${who}, ${job.issue ?? "equipment down"}` : `New request: ${who}`;
   const link = `${env().APP_URL}/app/jobs/${job.id}`;
@@ -29,7 +29,8 @@ ${job.urgent ? `<div style="display:inline-block;background:#e5484d;color:#fff;b
 ${button(link, job.urgent ? "Open it and call now" : "Open the job")}
 <p style="color:#71737d;font-size:13px;margin:16px 0 0">Came in through your website form. It's already on today's call list.</p>`);
   const text = `${job.urgent ? "EMERGENCY - " : ""}${who}\n${job.customer_name} ${job.phone ?? ""}\n\n${job.issue ?? ""}\n\nOpen: ${link}`;
-  return { to, subject, html, text, replyTo };
+  // Shown as "Tony Russo (via FollowUp)", and Reply goes straight to the customer when they gave an email.
+  return { to, subject, html, text, replyTo, fromName: `${job.customer_name} (via FollowUp)` };
 }
 
 export function digestEmail(to: string, businessName: string, dateLabel: string, groups: { title: string; items: CallItem[] }[], total: number): Mail {

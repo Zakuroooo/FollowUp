@@ -43,10 +43,12 @@ export async function otherJobsFor(job: Job): Promise<Job[]> {
   return all.filter((j) => j.id !== job.id && phoneKey(j.phone) === key);
 }
 
-export async function listMessages(limit = 50): Promise<Message[]> {
+export type InboxItem = Message & { jobs: { customer_name: string; business: string | null; source: string; urgent: boolean; stage: string } | null };
+
+export async function listMessages(limit = 50): Promise<InboxItem[]> {
   const supabase = await db();
-  const { data } = await supabase.from("messages").select("*").order("at", { ascending: false }).limit(limit);
-  return (data as Message[]) ?? [];
+  const { data } = await supabase.from("messages").select("*, jobs(customer_name, business, source, urgent, stage)").order("at", { ascending: false }).limit(limit);
+  return (data as InboxItem[]) ?? [];
 }
 
 export async function messagesForJob(jobId: string): Promise<Message[]> {

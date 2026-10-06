@@ -31,7 +31,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#050506] text-white">
       <header className="absolute inset-x-0 top-0 z-20">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-5 md:px-8">
+        <div className="flex items-center justify-between gap-3 px-5 py-5 md:px-10">
           <Link href="/" className="inline-flex items-center gap-2.5" aria-label="FollowUp home">
             <LogoMark dark={false} />
             <span className="text-[17px] font-semibold tracking-[-0.02em]">FollowUp</span>
@@ -76,7 +76,7 @@ export default function Landing() {
       </section>
 
       {/* HER NUMBERS, from the call */}
-      <section className="relative z-10 mx-auto max-w-6xl px-5 py-20 md:px-8">
+      <section className="relative z-10 mx-auto max-w-7xl px-5 py-20 md:px-8">
         <Reveal><dl className="grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-3">
           {[
             ["5", "places a request can arrive"],
@@ -93,7 +93,7 @@ export default function Landing() {
       </section>
 
       {/* HOW */}
-      <section id="how" className="mx-auto max-w-6xl px-5 pb-24 md:px-8">
+      <section id="how" className="mx-auto max-w-7xl px-5 pb-24 md:px-8">
         <Reveal><h2 className="max-w-2xl text-[34px] font-semibold leading-[1.05] tracking-[-0.035em] [text-wrap:balance] md:text-[52px]">
           Five places to look. <span className="text-white/40">One list to read.</span>
         </h2></Reveal>
@@ -135,7 +135,7 @@ export default function Landing() {
       </section>
 
       {/* JOURNEY */}
-      <section className="mx-auto max-w-6xl px-5 pb-28 md:px-8">
+      <section className="mx-auto max-w-7xl px-5 pb-28 md:px-8">
         <Reveal>
           <h2 className="max-w-2xl text-[34px] font-semibold leading-[1.05] tracking-[-0.035em] [text-wrap:balance] md:text-[52px]">
             From first call to done. <span className="text-white/40">Nothing falls off the route.</span>
@@ -171,9 +171,9 @@ export default function Landing() {
       </section>
 
       <footer className="relative overflow-hidden border-t border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-7 text-[13px] text-white/40 md:px-8">
-          <span className="inline-flex items-center gap-2"><LogoMark size={20} dark={false} /> FollowUp, a prototype for a refrigeration repair shop</span>
-          <span>Built with Claude Code</span>
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-7 text-[13px] text-white/40 md:px-10">
+          <span className="inline-flex items-center gap-2"><LogoMark size={20} dark={false} /> FollowUp</span>
+          <span>Every request in one place. Every morning, one list.</span>
         </div>
         <p aria-hidden="true" className="pointer-events-none -mb-[3.5vw] select-none text-center text-[21vw] font-semibold leading-[0.8] tracking-[-0.06em] bg-gradient-to-b from-white/[0.09] to-transparent bg-clip-text text-transparent">FollowUp</p>
       </footer>

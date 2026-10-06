@@ -112,7 +112,7 @@ export async function moveStage(id: string, to: Stage, form?: FormData) {
 
   const fields = Move.parse(form ? Object.fromEntries([...form.entries()].filter(([, v]) => v !== "")) : {});
   const now = new Date().toISOString();
-  const patch: Record<string, unknown> = { stage: to, stage_changed_at: now, last_contact_at: now, follow_up_on: null, attempts: 0 };
+  const patch: Record<string, unknown> = { stage: to, stage_changed_at: now, last_contact_at: now, follow_up_on: null, attempts: 0, acknowledged_at: job.acknowledged_at ?? now };
   if (job.stage === "lost") patch.lost_reason = null; // reopening clears the old reason
   // Leaving "new" means we finally talked to them: that's the end of the "time to call back" clock.
   if (job.stage === "new" && !job.first_response_at && to !== "lost") patch.first_response_at = now;
@@ -172,7 +172,7 @@ export async function logCall(id: string, form: FormData) {
   const job = await getJob(id);
   const now = new Date().toISOString();
   await supabase.from("jobs").update({
-    last_contact_at: now, follow_up_on: null, attempts: 0,
+    last_contact_at: now, follow_up_on: null, attempts: 0, acknowledged_at: job?.acknowledged_at ?? now,
     ...(job && !job.first_response_at ? { first_response_at: now } : {}),
   }).eq("id", id);
   await event(id, user.id, "called", note ? `Called: ${note}` : "Called");
@@ -223,7 +223,7 @@ export async function noAnswer(id: string) {
   const supabase = await db();
   const job = await getJob(id);
   const attempts = (job?.attempts ?? 0) + 1;
-  await supabase.from("jobs").update({ follow_up_on: tomorrow, attempts }).eq("id", id);
+  await supabase.from("jobs").update({ follow_up_on: tomorrow, attempts, acknowledged_at: job?.acknowledged_at ?? new Date().toISOString() }).eq("id", id);
   await event(id, user.id, "called", `Called, no answer (try ${attempts}). Back on the list tomorrow`);
   refresh(id);
 }
@@ -297,5 +297,17 @@ export async function addNote(id: string, form: FormData) {
   const note = String(form.get("note") ?? "").trim().slice(0, 300);
   if (!note || !(await getJob(id))) return; // only your own job (RLS also enforces this)
   await event(id, user.id, "note", `Note: ${note}`);
+  refresh(id);
+}
+
+/** "I'm on it": stops the repeating emergency alerts for this job. */
+export async function acknowledge(id: string) {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const job = await getJob(id);
+  if (!job || job.acknowledged_at) return;
+  const supabase = await db();
+  await supabase.from("jobs").update({ acknowledged_at: new Date().toISOString() }).eq("id", id);
+  await event(id, user.id, "note", "On it: emergency alerts stopped");
   refresh(id);
 }

@@ -14,7 +14,7 @@ function job(p: Partial<Job>): Job {
     id: p.id ?? Math.random().toString(36).slice(2), owner_id: "o", customer_name: "X", business: null, phone: null,
     source: "call", issue: null, urgent: false, urgency_source: "user", urgency_reason: null, stage: "new",
     quote_amount: null, scheduled_for: null, follow_up_on: null, lost_reason: null, notes: null,
-    last_contact_at: null, first_response_at: null, last_inbound_at: null, tech: null, attempts: 0, stage_changed_at: hoursAgo(1), created_at: hoursAgo(1), ...p,
+    last_contact_at: null, first_response_at: null, last_inbound_at: null, tech: null, attempts: 0, acknowledged_at: null, alert_count: 0, last_alert_at: null, stage_changed_at: hoursAgo(1), created_at: hoursAgo(1), ...p,
   };
 }
 
@@ -152,4 +152,14 @@ test("a customer who messaged again (and hasn't been answered) comes back as 'Th
 test("after 3 unanswered tries the reminder suggests marking it lost", () => {
   expect(classify(job({ follow_up_on: TODAY, attempts: 3 }), NOW, TODAY)).toMatchObject({ reason: "3 tries, no answer · mark lost?", action: "Last try" });
   expect(classify(job({ follow_up_on: TODAY, attempts: 1 }), NOW, TODAY)?.reason).toBe("No answer last time (try 2)");
+});
+
+import { dueForRealert, waitingEmergencies } from "./rules";
+test("an unanswered emergency re-alerts every 3 minutes, at most 10 times, until she acts", () => {
+  const fresh = job({ urgent: true, created_at: hoursAgo(0.1), last_alert_at: hoursAgo(0.06), alert_count: 1 }); // 3.6 min ago
+  expect(dueForRealert([fresh], NOW)).toHaveLength(1);
+  expect(dueForRealert([{ ...fresh, last_alert_at: hoursAgo(0.02) }], NOW)).toHaveLength(0); // 1.2 min ago: too soon
+  expect(dueForRealert([{ ...fresh, alert_count: 10 }], NOW)).toHaveLength(0); // gave up after 10
+  expect(waitingEmergencies([{ ...fresh, acknowledged_at: hoursAgo(0.01) }], NOW)).toHaveLength(0); // "I'm on it"
+  expect(waitingEmergencies([{ ...fresh, first_response_at: hoursAgo(0.01) }], NOW)).toHaveLength(0); // talked to them
 });
