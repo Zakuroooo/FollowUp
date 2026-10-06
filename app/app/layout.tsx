@@ -7,6 +7,7 @@ import { acknowledge, loadDemoJobs } from "@/lib/actions/jobs";
 import { dialable } from "@/lib/phone";
 import { PhoneIcon } from "@/components/ui";
 import { LiveRefresh } from "@/components/LiveRefresh";
+import { OfflineNotice } from "@/components/OfflineNotice";
 import { Submit } from "@/components/Submit";
 import { Logo, LogoMark } from "@/components/ui";
 import { NavLinks, MobileNav } from "./nav";
@@ -78,6 +79,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {children}
       </main>
       <LiveRefresh latest={latest} waiting={waiting.length} />
+      <OfflineNotice />
       <MobileNav demo={profile.is_guest} />
     </div>
   );
