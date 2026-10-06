@@ -9,17 +9,17 @@
 A lead and follow-up system for a small commercial refrigeration repair company,
 built from one discovery call with its owner.
 
-[**Live app**](https://followup-indol-seven.vercel.app) · [Try the demo (one click, no signup)](https://followup-indol-seven.vercel.app/login) · [Guide](docs/guide.html) · [Decisions](docs/DECISIONS.md)
+[**Live app**](https://followup-indol-seven.vercel.app) · [**Write-up**](docs/WRITEUP.md) · [**How to test it**](docs/TESTING.md) · [Edge cases](docs/EDGE-CASES.md) · [Decisions](docs/DECISIONS.md)
 
 ![Next.js](https://img.shields.io/badge/Next.js_15-000?logo=nextdotjs&logoColor=fff)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff)
 ![Supabase](https://img.shields.io/badge/Supabase_Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=000)
 ![Tailwind](https://img.shields.io/badge/Tailwind_v4-06B6D4?logo=tailwindcss&logoColor=fff)
-![Tests](https://img.shields.io/badge/tests-27_unit_·_4_e2e-2b5cff)
+![Tests](https://img.shields.io/badge/tests-46_unit_·_4_e2e-2b5cff)
 
-<a href="https://followup-indol-seven.vercel.app/explainer.mp4"><img src="docs/preview.gif" alt="A customer texts that their freezer stopped; it arrives on the call list as an emergency with an alert" width="860" /></a>
+<a href="https://followup-indol-seven.vercel.app/#tour"><img src="docs/preview.gif" alt="A customer texts that their freezer stopped; it arrives on the call list as an emergency with an alert" width="860" /></a>
 
-**▶ [Watch the 4-minute narrated explainer: the whole app, start to end](https://followup-indol-seven.vercel.app/explainer.mp4)**
+**▶ [Watch the 4-minute narrated tour on the website](https://followup-indol-seven.vercel.app/#tour)** · [direct video link](https://followup-indol-seven.vercel.app/explainer.mp4)
 
 </div>
 
@@ -27,7 +27,18 @@ built from one discovery call with its owner.
 
 ## Contents
 
-[The problem](#the-problem-in-her-words) · [What it does](#what-it-does) · [Five doors, one pipeline](#five-doors-one-pipeline) · [Who lands on the call list](#who-lands-on-the-call-list) · [Alerts](#alerts-she-cannot-miss) · [Architecture](#architecture) · [Data model](#data-model) · [Where AI is used](#where-ai-is-used-and-where-it-isnt) · [Security](#security) · [Tests](#tests) · [Run it](#run-it-locally) · [How it was built with Claude Code](#how-it-was-built-with-claude-code) · [Scope](#what-i-left-out-on-purpose) · [Next](#what-id-build-next)
+[Start here](#start-here) · [The problem](#the-problem-in-her-words) · [What it does](#what-it-does) · [Five doors, one pipeline](#five-doors-one-pipeline) · [Who lands on the call list](#who-lands-on-the-call-list) · [Alerts](#alerts-she-cannot-miss) · [Architecture](#architecture) · [Data model](#data-model) · [Where AI is used](#where-ai-is-used-and-where-it-isnt) · [Security](#security) · [Tests](#tests) · [Run it](#run-it-locally) · [How it was built with Claude Code](#how-it-was-built-with-claude-code) · [Scope](#what-i-left-out-on-purpose) · [Next](#what-id-build-next)
+
+---
+
+## Start here
+
+| If you have… | Read |
+|---|---|
+| 1 minute | The [live app](https://followup-indol-seven.vercel.app): press **Try the demo** |
+| 4 minutes | The [narrated tour](https://followup-indol-seven.vercel.app/#tour) |
+| 5 minutes | The [write-up](docs/WRITEUP.md): what I heard, the real problem, what I built, what I left out, rollout, cost, questions for Denise |
+| 15 minutes | [How to test every automation by hand](docs/TESTING.md) |
 
 ---
 
@@ -47,7 +58,7 @@ Denise runs a commercial refrigeration repair company: 4 technicians, 15–20 ne
 |---|---|
 | "Scattered in five places" | Calls, voicemails, texts, emails, website form and referrals all flow into **one pipeline** and **one list** |
 | "Wake up and know who to call" | The **Call list**: who to call, why, emergencies first. Also as a **7 AM email + phone alert** |
-| "Freezer down… by Monday they called someone else" | **Emergency alerts** to her phone instantly, **repeating every 3 minutes** until she acts |
+| "Freezer down… by Monday they called someone else" | **Emergency alerts** to her phone instantly, **repeating every 3 minutes** until she acts, and a **Friday 3 PM check** for anything that would wait until Monday |
 | "Did I send the quote? Did they say yes?" | Her own stage names, one-tap next step, full history on every job |
 | "My husband keeps asking for numbers" | **Numbers**: money waiting, win rate, time to call back, why jobs are lost |
 | Tech scheduling: "nice later" | Kept simple: assign a tech + arrival window, a 14-day **Schedule** |
@@ -57,16 +68,18 @@ Denise runs a commercial refrigeration repair company: 4 technicians, 15–20 ne
 ## See the automation in 60 seconds
 
 1. Open the [live app](https://followup-indol-seven.vercel.app) → **Try the demo** (a private copy with sample jobs, no signup).
-2. Go to **Try it** → press **Send** on "A customer texts". The message is read by AI, flagged as an emergency, matched to a customer, saved with their own words, and an alert fires (sound in the app, a push notification if alerts are on).
+2. Go to **Try it** (shown only in the demo) → press **Send** on "A customer texts". The message is read by AI, flagged as an emergency, matched to a customer, saved with their own words, and an alert fires (sound in the app, a push notification if alerts are on).
 3. Back on the **Call list**, it's on top, with a dark emergency bar that re-alerts every 3 minutes until you press **I'm on it**.
 4. On **Try it**, open "See the emails Denise gets" for the real **emergency email** and the **7 AM call-list email** FollowUp sends.
+
+Every other automation (phone notifications, emails, the 7 AM list, the Friday check, the email and text doors) has a step-by-step check in [docs/TESTING.md](docs/TESTING.md).
 
 ## What it does
 
 | Screen | For Denise |
 |---|---|
 | **Call list** | Who to call today and why, emergencies first, an AI "today" brief, one-tap *No answer → tomorrow*, *Coming up*, time to call back |
-| **Try it** | Pretend to be a customer and watch a request arrive by itself |
+| **Try it** *(demo only)* | Pretend to be a customer and watch a request arrive by itself. Real accounts don't see it: their requests are real |
 | **Inbox** | Every call, text, email and website request in the customer's own words |
 | **Job page** | Call / text, the next step as one question, what the customer said, AI-drafted follow-up, history with dates |
 | **All jobs · Schedule · Numbers** | Stages, visits by day / window / technician, money and why jobs were lost |
@@ -165,7 +178,8 @@ sequenceDiagram
 - **Web Push** (VAPID) to phone or computer, even with the app closed; emergencies use `requireInteraction` and open the job on tap. Installable PWA (iOS 16.4+ needs Home Screen).
 - **In the open app**: a chime for new requests, an urgent triple beep for emergencies (Web Audio, no files), flashing tab title, a red bar on every page, live refresh every 20 s.
 - **Repeat**: Supabase `pg_cron` + `pg_net` hit `/api/cron/realert` every 3 minutes (Vercel's free plan only runs daily crons). The auth token is generated inside the database and never committed.
-- **Email** (Resend): instant alert per request (display name = the customer, Reply goes to them) and the 7 AM list, claimed atomically so it can never double-send.
+- **Friday 3 PM check**: the same 3-minute job sends one notification + email per business on Friday afternoon (shop time) listing what's still on the list or due Saturday–Monday. The call list shows the same as a banner. Claimed once per Friday.
+- **Email** (Resend): instant alert per request (display name = the customer, Reply goes to them), the 7 AM list and the Friday check, each claimed atomically so it can never double-send. The deployment uses Resend's test sender, which only delivers to the account owner until a domain is verified.
 
 ---
 
@@ -218,6 +232,7 @@ erDiagram
     text_array techs
     text digest_email "confirmed only"
     date digest_sent_on "once a day"
+    date weekend_sent_on "once a Friday"
     bool is_guest
   }
   JOBS {
@@ -293,14 +308,14 @@ An automated security review ran on every commit and flagged **12 issues** durin
 ## Tests
 
 ```bash
-npm test          # 27 unit tests: call-list rules, snooze/coming-up, time to call back, repeat-alert policy,
-                  # triage, phone matching, AI fallbacks
+npm test          # 46 unit tests: call-list rules, snooze/coming-up, time to call back, repeat-alert policy,
+                  # Friday check, triage, phone matching, AI fallbacks, Twilio signatures, email escaping
 npm run e2e       # 4 Playwright tests in real Chrome: demo flow, stages + CSV, route protection,
                   # website request → emergency on the owner's list
 npm run lint && npm run typecheck
 ```
 
-[CI](.github/workflows/ci.yml) runs lint, types, unit tests and the build on every push, then the browser tests against a throwaway Supabase.
+[CI](.github/workflows/ci.yml) runs lint, types, unit tests and the build on every push; the browser tests run on demand against a throwaway Supabase.
 
 ---
 
