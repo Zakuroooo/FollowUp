@@ -59,13 +59,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           const mins = Math.max(1, Math.round((now.getTime() - new Date(j.created_at).getTime()) / 60_000));
           const tel = dialable(j.phone);
           return (
-            <div key={j.id} role="alert" className="mx-auto mb-4 flex max-w-[1240px] flex-wrap items-center gap-3 rounded-xl bg-urgent px-4 py-3 text-white shadow-[0_12px_30px_-12px_rgba(229,72,77,.7)]">
-              <span className="relative flex size-2.5"><span className="absolute inline-flex size-full animate-ping rounded-full bg-white opacity-75" /><span className="relative inline-flex size-2.5 rounded-full bg-white" /></span>
-              <p className="min-w-0 flex-1 text-sm"><span className="font-semibold">Emergency waiting {mins < 60 ? `${mins} min` : `${Math.round(mins / 60)} h`}:</span> {j.business ?? j.customer_name}, {j.issue}
+            <div key={j.id} role="alert" className="mx-auto mb-4 flex max-w-[1240px] flex-wrap items-center gap-3 rounded-xl border border-urgent/40 bg-[linear-gradient(90deg,#1a0a0d,#0c0d14)] px-4 py-3 text-white shadow-[inset_3px_0_0_var(--urgent),0_12px_30px_-16px_rgba(180,35,47,.6)]">
+              <span className="relative flex size-2.5"><span className="absolute inline-flex size-full animate-ping rounded-full bg-urgent opacity-75" /><span className="relative inline-flex size-2.5 rounded-full bg-urgent" /></span>
+              <p className="min-w-0 flex-1 text-sm text-white/80"><span className="font-semibold text-[#ff8a92]">Emergency waiting {mins < 60 ? `${mins} min` : `${Math.round(mins / 60)} h`}:</span> {j.business ?? j.customer_name}, {j.issue}
                 {waiting.length > 1 && <a href="/app" className="ml-2 whitespace-nowrap font-semibold underline underline-offset-2">+{waiting.length - 1} more waiting</a>}</p>
-              {tel && <a href={`tel:${tel}`} className="btn btn-sm rounded-full bg-white text-urgent-ink hover:bg-white/90"><PhoneIcon size={14} /> Call</a>}
-              <a href={`/app/jobs/${j.id}`} className="btn btn-sm rounded-full border border-white/40 text-white hover:bg-white/10">Open</a>
-              <form action={acknowledge.bind(null, j.id)}><Submit className="btn btn-sm rounded-full text-white/90 hover:bg-white/10">I&apos;m on it</Submit></form>
+              {tel && <a href={`tel:${tel}`} className="btn btn-sm rounded-full bg-urgent text-white hover:bg-urgent-ink"><PhoneIcon size={14} /> Call</a>}
+              <a href={`/app/jobs/${j.id}`} className="btn btn-sm rounded-full border border-white/20 text-white hover:bg-white/10">Open</a>
+              <form action={acknowledge.bind(null, j.id)}><Submit className="btn btn-sm rounded-full text-white/70 hover:bg-white/10 hover:text-white">I&apos;m on it</Submit></form>
             </div>
           );
         })}

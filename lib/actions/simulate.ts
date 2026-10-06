@@ -53,3 +53,29 @@ export async function simulate(_prev: SimState, form: FormData): Promise<SimStat
   const what = r.outcome === "not_a_job" ? "Filed as not a job (spam, invoice or similar)." : r.outcome === "added_to_job" ? "Added to that customer's open job." : r.urgent ? "New EMERGENCY job created." : "New job created.";
   return { ok: `${audio instanceof File && audio.size ? `Transcribed: "${text.slice(0, 120)}${text.length > 120 ? "…" : ""}" ` : ""}${what}`, jobId: r.jobId };
 }
+
+const QUICK = {
+  text: { door: "sms", body: "hi this is Marco at Marco's Trattoria, our walk in freezer stopped and its 34 degrees in there, we have a full order of meat. please call asap" },
+  voicemail: { door: "voicemail", body: "Hey, it's Priya from Fresh Bowl Cafe. Our ice machine is leaking water across the kitchen floor and it's not making ice. Can someone call me back today? Thanks." },
+  email: { door: "email", body: "Request for quote\n\nHello, we'd like a price to replace the door gaskets on three reach-in coolers at Harbor Deli. Next week is fine. Thanks, Sam Ortiz" },
+} as const;
+
+/** One click on the Automations page: a realistic customer request arrives through the real pipeline. */
+export async function quickSimulate(kind: keyof typeof QUICK): Promise<SimState> {
+  const user = await currentUser();
+  if (!user) return { error: "Please log in again." };
+  const a = admin();
+  const key = createHash("sha256").update(`sim|${user.id}`).digest("hex").slice(0, 32);
+  const { count } = await a.from("form_hits").select("id", { count: "exact", head: true }).eq("ip_hash", key).gte("at", new Date(Date.now() - 10 * 60_000).toISOString());
+  if ((count ?? 0) >= 15) return { error: "That's a lot of tests. Try again in a few minutes." };
+  await a.from("form_hits").insert({ slug: "simulator", ip_hash: key });
+  const q = QUICK[kind];
+  const phone = `(614) 555-${String(1000 + Math.floor(Math.random() * 8999))}`; // a new caller each time
+  const r = await ingest({
+    ownerId: user.id, door: q.door as Door, text: q.body,
+    fromPhone: q.door === "email" ? null : phone, fromEmail: q.door === "email" ? "sam@harbordeli.example" : null,
+    subject: q.door === "email" ? "Request for quote" : null,
+  });
+  revalidatePath("/app", "layout");
+  return { ok: r.urgent ? "Arrived as an EMERGENCY: alert sent, it's on top of your call list." : "Arrived: it's a new job on your call list.", jobId: r.jobId };
+}

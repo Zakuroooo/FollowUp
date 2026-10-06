@@ -44,3 +44,7 @@ next-env.d.ts
 # e2e output
 /test-results
 /playwright-report
+
+# AI assistant config (kept local)
+CLAUDE.md
+.claude/
