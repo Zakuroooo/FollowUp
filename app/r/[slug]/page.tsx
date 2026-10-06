@@ -18,8 +18,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 /** The public "Request service" page a business links from its website. */
-export default async function RequestPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function RequestPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ ref?: string }> }) {
   const { slug } = await params;
+  const { ref } = await searchParams;
   const b = await business(slug);
   if (!b) notFound();
   const name = b.name;
@@ -36,7 +37,8 @@ export default async function RequestPage({ params }: { params: Promise<{ slug: 
             <span className="shrink-0 rounded-full bg-urgent px-4 py-2 text-sm font-semibold text-white">{b.phone}</span>
           </a>
         )}
-        <RequestForm slug={slug} business={name} />
+        {ref && <p className="mt-4 text-sm text-ink-2">Referred by <span className="font-medium text-ink">{ref.slice(0, 60)}</span>. Thanks for trusting us.</p>}
+        <RequestForm slug={slug} business={name} referral={ref?.slice(0, 60)} />
         <p className="mt-8 flex items-center justify-center gap-1.5 text-[12px] text-muted"><LogoMark size={16} /> Requests are handled with FollowUp</p>
       </div>
     </main>

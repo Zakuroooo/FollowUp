@@ -21,9 +21,23 @@ export function LiveRefresh({ latest }: { latest: { id: string; at: string; name
     return () => { window.removeEventListener("pointerdown", unlock); window.removeEventListener("keydown", unlock); };
   }, []);
 
+  // A device alert arrived while the app is open: sound + notice immediately, no waiting for the refresh.
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.type !== "followup-alert") return;
+      const a = e.data.alert as { title: string; url: string; urgent?: boolean };
+      const id = a.url?.match(/\/app\/jobs\/([0-9a-f-]{36})/)?.[1];
+      if (id) { seen.current = new Date().toISOString(); setNotice({ id, at: seen.current, name: a.title.replace(/^(EMERGENCY|New request): /, ""), urgent: !!a.urgent }); }
+      router.refresh();
+    };
+    navigator.serviceWorker.addEventListener("message", onMsg);
+    return () => navigator.serviceWorker.removeEventListener("message", onMsg);
+  }, [router]);
+
   useEffect(() => {
     const tick = () => { if (document.visibilityState === "visible") router.refresh(); };
-    const id = setInterval(tick, 45_000);
+    const id = setInterval(tick, 20_000);
     document.addEventListener("visibilitychange", tick);
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", tick); };
   }, [router]);

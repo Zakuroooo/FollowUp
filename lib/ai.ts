@@ -70,7 +70,8 @@ const ParsedSchema = z.object({
   business: z.string().max(120).catch(""),
   phone: z.string().max(40).catch(""),
   issue: z.string().max(1000).catch(""),
-  source: z.enum(["call", "web_form", "text", "referral", "repeat"]).catch("text"),
+  source: z.enum(["call", "web_form", "text", "email", "referral", "repeat"]).catch("text"),
+  is_job: z.boolean().catch(true),
   urgent: z.boolean().catch(false),
   urgent_reason: z.string().max(120).catch(""),
 });
@@ -81,9 +82,10 @@ export async function parseRequest(text: string, ownerId: string): Promise<Parse
     "parse",
     ownerId,
     `You turn a message a commercial refrigeration repair shop received (text, voicemail transcript, email or a note) into a job record.
-Return ONLY a JSON object with keys: customer_name, business, phone, issue, source, urgent, urgent_reason.
+Return ONLY a JSON object with keys: customer_name, business, phone, issue, source, urgent, urgent_reason, is_job.
+- is_job: false for spam, newsletters, invoices, receipts, sales pitches or anything that is not someone asking for service.
 - issue: one plain sentence describing what is broken, in the customer's terms. No greetings.
-- source: one of "call" (voicemail/phone), "text", "web_form", "referral", "repeat".
+- source: one of "call" (voicemail/phone), "text", "email", "web_form", "referral", "repeat".
 - urgent: true only if equipment is failing now or food/stock is at risk (e.g. freezer down, not holding temp, leaking).
 - urgent_reason: a few words quoting why, or "".
 - Use "" for anything not stated. Never invent names, businesses or numbers.`,

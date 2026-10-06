@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getJob, listEvents, otherJobsFor } from "@/lib/data";
+import { getJob, getProfile, listEvents, messagesForJob, otherJobsFor } from "@/lib/data";
 import { addNote, logCall, moveBack, moveStage, noAnswer, setReminder, setVisitDate, toggleUrgent } from "@/lib/actions/jobs";
 import { ago } from "@/lib/rules";
 import { FLOW, LOST_REASONS, SOURCE_LABEL, STAGE_LABEL, STAGE_SHORT, isOpen, previousStage } from "@/lib/stages";
@@ -31,7 +31,17 @@ export default async function JobPage({ params, searchParams }: {
   const { added } = await searchParams;
   const job = await getJob(id);
   if (!job) notFound();
-  const [events, others] = await Promise.all([listEvents(id), otherJobsFor(job)]);
+  const [events, others, said, profile] = await Promise.all([listEvents(id), otherJobsFor(job), messagesForJob(id), getProfile()]);
+  const techs = profile?.techs ?? [];
+  const TechPick = ({ id: fid }: { id: string }) => techs.length ? (
+    <div className="w-44">
+      <label className="label" htmlFor={fid}>Tech</label>
+      <select id={fid} name="tech" defaultValue={job.tech ?? ""} className="field">
+        <option value="">Not yet</option>
+        {techs.map((t) => <option key={t} value={t}>{t}</option>)}
+      </select>
+    </div>
+  ) : null;
   const now = new Date();
   const tel = dialable(job.phone);
   const open = isOpen(job.stage);
@@ -43,6 +53,7 @@ export default async function JobPage({ params, searchParams }: {
   const facts: [string, string][] = [
     ["Quote", job.quote_amount !== null ? money(job.quote_amount) : "Not sent"],
     ["Visit", job.scheduled_for ? fmtDate(job.scheduled_for) : "Not set"],
+    ["Tech", job.tech ?? "Not assigned"],
     ["Reminder", job.follow_up_on ? fmtDate(job.follow_up_on) : "None"],
     ["Came in", `${ago(job.created_at, now)} by ${SOURCE_LABEL[job.source].toLowerCase()}`],
   ];
@@ -86,8 +97,8 @@ export default async function JobPage({ params, searchParams }: {
           </div>
 
           <dl className="grid grid-cols-2 gap-px self-start overflow-hidden rounded-xl bg-white/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)]">
-            {facts.map(([k, v]) => (
-              <div key={k} className="bg-[#0b0f20]/80 px-4 py-3.5">
+            {facts.map(([k, v], i) => (
+              <div key={k} className={`bg-[#0b0f20]/80 px-4 py-3.5 ${i === facts.length - 1 && facts.length % 2 ? "col-span-2" : ""}`}>
                 <dt className="text-[12px] text-white/45">{k}</dt>
                 <dd className="mt-1 text-[15px] font-medium">{v}</dd>
               </div>
@@ -137,17 +148,19 @@ export default async function JobPage({ params, searchParams }: {
                       <label className="label" htmlFor="scheduled_for">Visit date (optional)</label>
                       <input id="scheduled_for" name="scheduled_for" type="date" className="field" />
                     </div>
+                    <TechPick id="tech_yes" />
                     <Submit className="btn-ink btn-lg rounded-full px-6">Yes, they said yes</Submit>
                   </form>
                 )}
                 {job.stage === "scheduled" && (
                   <div className="flex flex-wrap items-end gap-3">
-                    <form action={setVisitDate.bind(null, id)} className="flex items-end gap-2">
+                    <form action={setVisitDate.bind(null, id)} className="flex flex-wrap items-end gap-2">
                       <div className="w-52">
                         <label className="label" htmlFor="visit">Visit date</label>
                         <input id="visit" name="scheduled_for" type="date" required defaultValue={job.scheduled_for ?? ""} className="field" />
                       </div>
-                      <Submit className="btn-line">Save date</Submit>
+                      <TechPick id="tech_visit" />
+                      <Submit className="btn-line">Book visit</Submit>
                     </form>
                     <form action={moveStage.bind(null, id, "done")}><Submit className="btn-ink btn-lg rounded-full px-6">Job done</Submit></form>
                   </div>
@@ -181,6 +194,24 @@ export default async function JobPage({ params, searchParams }: {
                 <p className="text-sm text-ink-2">It no longer shows on your call list.</p>
               </div>
               {back && <form action={moveBack.bind(null, id)}><Submit className="btn-line">Reopen: back to {STAGE_SHORT[back]}</Submit></form>}
+            </section>
+          )}
+
+          {said.length > 0 && (
+            <section className="card p-6 md:p-7" aria-labelledby="said">
+              <h2 id="said" className="text-[15px] font-semibold">What the customer said</h2>
+              <p className="text-sm text-ink-2">Their own words, exactly as they came in.</p>
+              <ol className="mt-4 flex flex-col gap-3">
+                {said.map((m) => (
+                  <li key={m.id} className="rounded-xl bg-subtle px-4 py-3">
+                    <p className="text-[12px] font-medium text-muted">
+                      {{ web_form: "Website form", email: "Email", sms: "Text", call: "Phone call · recorded and transcribed", voicemail: "Voicemail · transcribed", paste: "Pasted" }[m.channel]} · {ago(m.at, now)}{m.from_email ? ` · ${m.from_email}` : ""}
+                    </p>
+                    {m.subject && <p className="mt-1 text-sm font-medium">{m.subject}</p>}
+                    <p className="mt-1 whitespace-pre-line text-[15px] leading-relaxed">&ldquo;{m.body}&rdquo;</p>
+                  </li>
+                ))}
+              </ol>
             </section>
           )}
 

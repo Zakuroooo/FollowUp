@@ -17,8 +17,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const now = new Date();
   const calls = callList(jobs, now, todayIn(profile.timezone, now)).total;
   const initial = profile.business_name.trim()[0]?.toUpperCase() ?? "B";
-  const newest = jobs.reduce<(typeof jobs)[number] | null>((a, j) => (!a || j.created_at > a.created_at ? j : a), null);
-  const latest = newest ? { id: newest.id, at: newest.created_at, name: newest.business ?? newest.customer_name, urgent: newest.urgent } : null;
+  // Newest activity from a customer: a new job, or a message on an existing one.
+  const stamp = (j: (typeof jobs)[number]) => (j.last_inbound_at && j.last_inbound_at > j.created_at ? j.last_inbound_at : j.created_at);
+  const newest = jobs.reduce<(typeof jobs)[number] | null>((a, j) => (!a || stamp(j) > stamp(a) ? j : a), null);
+  const latest = newest ? { id: newest.id, at: stamp(newest), name: newest.business ?? newest.customer_name, urgent: newest.urgent } : null;
   const needsSetup = !profile.is_guest && (profile.business_name === "My business" || !profile.business_phone);
 
   return (

@@ -14,7 +14,7 @@ function job(p: Partial<Job>): Job {
     id: p.id ?? Math.random().toString(36).slice(2), owner_id: "o", customer_name: "X", business: null, phone: null,
     source: "call", issue: null, urgent: false, urgency_source: "user", urgency_reason: null, stage: "new",
     quote_amount: null, scheduled_for: null, follow_up_on: null, lost_reason: null, notes: null,
-    last_contact_at: null, first_response_at: null, stage_changed_at: hoursAgo(1), created_at: hoursAgo(1), ...p,
+    last_contact_at: null, first_response_at: null, last_inbound_at: null, tech: null, attempts: 0, stage_changed_at: hoursAgo(1), created_at: hoursAgo(1), ...p,
   };
 }
 
@@ -141,4 +141,15 @@ test("a draft never echoes the customer's own sentence, and fits how they reache
   expect(web).toBe("Hi Carla, it's Cold Air Co., following up on your repair request you sent through our website. When is a good time to talk? We can usually get a tech out quickly.");
   const call = draftByTemplate({ customer_name: "Ed", issue: "Freezer door gasket", stage: "new", source: "call", quote_amount: null } as never, "Cold Air Co.");
   expect(call).toContain("returning your call about the freezer door gasket");
+});
+
+test("a customer who messaged again (and hasn't been answered) comes back as 'They messaged you'", () => {
+  const j = job({ stage: "awaiting_yes", last_contact_at: hoursAgo(30), last_inbound_at: hoursAgo(1) });
+  expect(classify(j, NOW, TODAY)).toMatchObject({ bucket: "replied", action: "Reply" });
+  expect(classify({ ...j, last_contact_at: hoursAgo(0.5) }, NOW, TODAY)).toBeNull(); // answered → off the list
+});
+
+test("after 3 unanswered tries the reminder suggests marking it lost", () => {
+  expect(classify(job({ follow_up_on: TODAY, attempts: 3 }), NOW, TODAY)).toMatchObject({ reason: "3 tries, no answer · mark lost?", action: "Last try" });
+  expect(classify(job({ follow_up_on: TODAY, attempts: 1 }), NOW, TODAY)?.reason).toBe("No answer last time (try 2)");
 });

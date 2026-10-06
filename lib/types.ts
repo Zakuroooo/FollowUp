@@ -1,7 +1,7 @@
 export const STAGES = ["new", "quote", "awaiting_yes", "scheduled", "done", "lost"] as const;
 export type Stage = (typeof STAGES)[number];
 
-export const SOURCES = ["call", "web_form", "text", "referral", "repeat"] as const;
+export const SOURCES = ["call", "web_form", "text", "email", "referral", "repeat"] as const;
 export type Source = (typeof SOURCES)[number];
 
 export interface Job {
@@ -20,9 +20,12 @@ export interface Job {
   scheduled_for: string | null; // YYYY-MM-DD
   follow_up_on: string | null; // YYYY-MM-DD
   lost_reason: string | null;
+  tech: string | null;
+  attempts: number;
   notes: string | null;
   last_contact_at: string | null;
   first_response_at: string | null;
+  last_inbound_at: string | null;
   stage_changed_at: string;
   created_at: string;
 }
@@ -45,4 +48,19 @@ export interface Profile {
   digest_enabled: boolean;
   is_guest: boolean;
   digest_sent_on: string | null;
+  inbound_token: string;
+  techs: string[];
+}
+
+export interface Message {
+  id: number;
+  job_id: string | null;
+  channel: "web_form" | "email" | "sms" | "call" | "voicemail" | "paste";
+  from_phone: string | null;
+  from_email: string | null;
+  subject: string | null;
+  body: string | null;
+  recording_url: string | null;
+  outcome: "new_job" | "added_to_job" | "not_a_job";
+  at: string;
 }

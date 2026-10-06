@@ -99,6 +99,7 @@ const Move = z.object({
   scheduled_for: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("").transform(() => undefined)),
   lost_reason: z.string().trim().max(60).optional(),
   lost_detail: z.string().trim().max(150).optional(),
+  tech: z.string().trim().max(60).optional(),
 });
 
 /** Move a job one step forward (or to lost / a specific stage), with the details that step needs. */
@@ -111,7 +112,7 @@ export async function moveStage(id: string, to: Stage, form?: FormData) {
 
   const fields = Move.parse(form ? Object.fromEntries([...form.entries()].filter(([, v]) => v !== "")) : {});
   const now = new Date().toISOString();
-  const patch: Record<string, unknown> = { stage: to, stage_changed_at: now, last_contact_at: now, follow_up_on: null };
+  const patch: Record<string, unknown> = { stage: to, stage_changed_at: now, last_contact_at: now, follow_up_on: null, attempts: 0 };
   if (job.stage === "lost") patch.lost_reason = null; // reopening clears the old reason
   // Leaving "new" means we finally talked to them: that's the end of the "time to call back" clock.
   if (job.stage === "new" && !job.first_response_at && to !== "lost") patch.first_response_at = now;
@@ -123,6 +124,10 @@ export async function moveStage(id: string, to: Stage, form?: FormData) {
   if (to === "scheduled" && fields.scheduled_for) {
     patch.scheduled_for = fields.scheduled_for;
     extra = ` · visit ${fields.scheduled_for}`;
+  }
+  if (to === "scheduled" && fields.tech) {
+    patch.tech = fields.tech;
+    extra += ` · ${fields.tech}`;
   }
   if (to === "lost") {
     const reason = [fields.lost_reason, fields.lost_detail].filter(Boolean).join(": ");
@@ -143,9 +148,10 @@ export async function setVisitDate(id: string, form: FormData) {
   if (!user) redirect("/login");
   const date = String(form.get("scheduled_for") ?? "");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+  const tech = String(form.get("tech") ?? "").trim().slice(0, 60) || null;
   const supabase = await db();
-  await supabase.from("jobs").update({ scheduled_for: date }).eq("id", id);
-  await event(id, user.id, "note", `Visit date set to ${date}`);
+  await supabase.from("jobs").update({ scheduled_for: date, tech }).eq("id", id);
+  await event(id, user.id, "note", `Visit booked for ${date}${tech ? ` with ${tech}` : ""}`);
   refresh(id);
 }
 
@@ -166,7 +172,7 @@ export async function logCall(id: string, form: FormData) {
   const job = await getJob(id);
   const now = new Date().toISOString();
   await supabase.from("jobs").update({
-    last_contact_at: now, follow_up_on: null,
+    last_contact_at: now, follow_up_on: null, attempts: 0,
     ...(job && !job.first_response_at ? { first_response_at: now } : {}),
   }).eq("id", id);
   await event(id, user.id, "called", note ? `Called: ${note}` : "Called");
@@ -200,6 +206,7 @@ export async function toggleUrgent(id: string) {
 export async function loadDemoJobs() {
   const supabase = await db();
   await supabase.rpc("seed_demo_jobs");
+  await supabase.rpc("seed_demo_extras");
   refresh();
 }
 
@@ -214,8 +221,10 @@ export async function noAnswer(id: string) {
   d.setUTCDate(d.getUTCDate() + 1);
   const tomorrow = d.toISOString().slice(0, 10);
   const supabase = await db();
-  await supabase.from("jobs").update({ follow_up_on: tomorrow }).eq("id", id);
-  await event(id, user.id, "called", "Called, no answer. Back on the list tomorrow");
+  const job = await getJob(id);
+  const attempts = (job?.attempts ?? 0) + 1;
+  await supabase.from("jobs").update({ follow_up_on: tomorrow, attempts }).eq("id", id);
+  await event(id, user.id, "called", `Called, no answer (try ${attempts}). Back on the list tomorrow`);
   refresh(id);
 }
 

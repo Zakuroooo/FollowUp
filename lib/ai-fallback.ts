@@ -7,7 +7,7 @@ import type { Job, Source } from "@/lib/types";
 
 export type Parsed = {
   customer_name: string; business: string; phone: string; issue: string;
-  source: Source; urgent: boolean; urgent_reason: string; via: "ai" | "rules";
+  source: Source; urgent: boolean; urgent_reason: string; via: "ai" | "rules"; is_job?: boolean;
 };
 
 const PHONE = /(\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/;
@@ -25,6 +25,7 @@ export function parseByRules(text: string): Parsed {
     customer_name: name, business, phone, issue: t.replace(PHONE, "").replace(/\s+/g, " ").slice(0, 300),
     source: /voicemail|called|left a message/i.test(t) ? "call" : /referr|recommended/i.test(t) ? "referral" : "text",
     urgent: v.urgent, urgent_reason: v.reason ?? "", via: "rules",
+    is_job: !/\b(unsubscribe|newsletter|invoice #|receipt|your order|promo|discount code|seo services|marketing services)\b/i.test(t),
   };
 }
 

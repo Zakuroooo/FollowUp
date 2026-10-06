@@ -7,7 +7,7 @@
 import type { Job } from "./types";
 import { isOpen } from "./stages";
 
-export type Bucket = "emergency" | "new" | "quote" | "follow_up" | "schedule" | "reminder" | "visit_passed";
+export type Bucket = "emergency" | "replied" | "new" | "quote" | "follow_up" | "schedule" | "reminder" | "visit_passed";
 
 export interface CallItem {
   job: Job;
@@ -20,6 +20,7 @@ export interface CallItem {
 /** The order the blocks appear on the call list. */
 export const BUCKETS: { key: Bucket; title: string; hint: string }[] = [
   { key: "emergency", title: "Emergencies", hint: "Equipment down — these go to competitors first" },
+  { key: "replied", title: "They messaged you", hint: "Wrote or called again, not answered yet" },
   { key: "new", title: "New requests", hint: "Nobody has called them back yet" },
   { key: "reminder", title: "Reminders", hint: "Follow-up dates you set" },
   { key: "quote", title: "Quotes to send", hint: "They are waiting on your price" },
@@ -66,8 +67,14 @@ export function classify(job: Job, now: Date, today: string): CallItem | null {
   // A date she set herself ("call me Tuesday", or "no answer, try tomorrow") overrides every other rule:
   // before that day the job waits under "Coming up"; on the day it comes back as a reminder.
   if (job.follow_up_on && job.follow_up_on > today) return null;
+  // They texted/emailed/called again and nobody has answered since: that's the next call.
+  if (job.stage !== "new" && job.last_inbound_at && (!job.last_contact_at || job.last_inbound_at > job.last_contact_at)) {
+    return { job, bucket: "replied", reason: `They messaged ${ago(job.last_inbound_at, now)}`, action: "Reply", overdue: false };
+  }
   if (job.follow_up_on && job.follow_up_on <= today) {
-    return { job, bucket: "reminder", reason: `Reminder for ${job.follow_up_on}`, action: "Call", overdue: job.follow_up_on < today };
+    // After 3 unanswered tries, suggest letting it go (never does it by itself).
+    if (job.attempts >= 3) return { job, bucket: "reminder", reason: `${job.attempts} tries, no answer · mark lost?`, action: "Last try", overdue: true };
+    return { job, bucket: "reminder", reason: job.attempts ? `No answer last time (try ${job.attempts + 1})` : `Reminder for ${job.follow_up_on}`, action: "Call", overdue: job.follow_up_on < today };
   }
 
   const lastTouch = job.last_contact_at ?? job.stage_changed_at;

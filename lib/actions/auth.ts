@@ -47,6 +47,7 @@ export async function tryDemo() {
   if (error) redirect("/login?error=demo_unavailable");
   const { error: seedError } = await supabase.rpc("seed_demo_jobs");
   if (seedError) redirect("/login?error=demo_data");
+  await supabase.rpc("seed_demo_extras"); // original messages, techs; the demo still works if this fails
   redirect("/app");
 }
 

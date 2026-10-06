@@ -24,6 +24,7 @@ export const SOURCE_LABEL: Record<Source, string> = {
   call: "Phone call",
   web_form: "Website form",
   text: "Text message",
+  email: "Email",
   referral: "Referral",
   repeat: "Repeat customer",
 };

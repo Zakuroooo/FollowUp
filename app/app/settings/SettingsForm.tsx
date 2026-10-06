@@ -5,7 +5,7 @@ import { TIMEZONES } from "@/lib/timezones";
 import { Submit } from "@/components/Submit";
 import { AlertsToggle } from "@/components/AlertsToggle";
 
-type P = { business_name: string; business_phone: string; timezone: string; digest_email: string; digest_enabled: boolean; is_guest: boolean };
+type P = { business_name: string; business_phone: string; techs: string; timezone: string; digest_email: string; digest_enabled: boolean; is_guest: boolean };
 
 export function SettingsForm({ profile, formUrl, emailOn, aiOn, pushOn }: { profile: P; formUrl: string; emailOn: boolean; aiOn: boolean; pushOn: boolean }) {
   const [saved, save] = useActionState<SettingsState, FormData>(saveSettings, {});
@@ -52,6 +52,12 @@ export function SettingsForm({ profile, formUrl, emailOn, aiOn, pushOn }: { prof
               </select>
               <p className="mt-1 text-[12px] text-muted">&ldquo;Today&rdquo; and the 7 AM email follow this.</p>
             </div>
+          </div>
+          <div className="border-t border-line-2 pt-5">
+            <h2 className="text-[17px] font-semibold">Technicians</h2>
+            <p className="mt-1 text-sm text-ink-2">Who goes out on jobs. You pick one when you book a visit, and the Schedule shows who&apos;s where.</p>
+            <label className="label mt-4" htmlFor="techs">Names, separated by commas</label>
+            <input id="techs" name="techs" maxLength={600} placeholder="Carlos, Mike, Jen, Dave" defaultValue={profile.techs} className="field" />
           </div>
           <div className="border-t border-line-2 pt-5">
             <h2 className="text-[17px] font-semibold">Email alerts</h2>

@@ -1,7 +1,7 @@
 /** Reads for pages. All go through the user client, so RLS keeps them to the signed-in account. */
 import "server-only";
 import { db } from "@/lib/db/server";
-import type { Job, JobEvent, Profile } from "@/lib/types";
+import type { Job, JobEvent, Message, Profile } from "@/lib/types";
 import { phoneKey } from "@/lib/phone";
 
 function normalise(row: Record<string, unknown>): Job {
@@ -41,4 +41,16 @@ export async function otherJobsFor(job: Job): Promise<Job[]> {
   if (!key) return [];
   const all = await listJobs();
   return all.filter((j) => j.id !== job.id && phoneKey(j.phone) === key);
+}
+
+export async function listMessages(limit = 50): Promise<Message[]> {
+  const supabase = await db();
+  const { data } = await supabase.from("messages").select("*").order("at", { ascending: false }).limit(limit);
+  return (data as Message[]) ?? [];
+}
+
+export async function messagesForJob(jobId: string): Promise<Message[]> {
+  const supabase = await db();
+  const { data } = await supabase.from("messages").select("*").eq("job_id", jobId).order("at", { ascending: true });
+  return (data as Message[]) ?? [];
 }

@@ -5,8 +5,11 @@ import { usePathname } from "next/navigation";
 const ITEMS = [
   { href: "/app", label: "Call list", short: "Calls", icon: "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" },
   { href: "/app/jobs", label: "All jobs", short: "Jobs", icon: "M4 6h16M4 12h16M4 18h10" },
+  { href: "/app/inbox", label: "Inbox", short: "Inbox", icon: "M4 13h4l2 3h4l2-3h4M4 13l2.5-7h11l2.5 7v6H4z" },
+  { href: "/app/schedule", label: "Schedule", short: "Schedule", icon: "M5 5h14v15H5zM5 10h14M9 3v4M15 3v4", desktopOnly: true },
+  { href: "/app/numbers", label: "Numbers", short: "Numbers", icon: "M5 20V10M12 20V4M19 20v-7", desktopOnly: true },
   { href: "/app/jobs/new", label: "Add a job", short: "Add", icon: "M12 5v14M5 12h14" },
-  { href: "/app/settings", label: "Settings", short: "Settings", icon: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" },
+  { href: "/app/settings", label: "Settings", short: "More", icon: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" },
 ];
 
 function active(path: string, href: string) {
@@ -40,7 +43,7 @@ export function MobileNav() {
   const path = usePathname();
   return (
     <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-card/90 backdrop-blur-md md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-      {ITEMS.map((i) => {
+      {ITEMS.filter((i) => !("desktopOnly" in i)).map((i) => {
         const on = active(path, i.href);
         return (
           <Link key={i.href} href={i.href} aria-current={on ? "page" : undefined}

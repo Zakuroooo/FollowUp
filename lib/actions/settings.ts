@@ -20,6 +20,7 @@ const Settings = z.object({
   business_phone: z.string().trim().max(40).refine((p) => !p || p.replace(/\D/g, "").length >= 10, "Enter a full phone number"),
   timezone: z.enum(TIMEZONES.map(([tz]) => tz) as [string, ...string[]]),
   digest_enabled: z.literal("on").optional(),
+  techs: z.string().max(600).optional(),
 });
 
 export async function saveSettings(_prev: SettingsState, form: FormData): Promise<SettingsState> {
@@ -28,9 +29,11 @@ export async function saveSettings(_prev: SettingsState, form: FormData): Promis
   const parsed = Settings.safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const s = parsed.data;
+  // "Carlos, Mike, Jen" → ["Carlos","Mike","Jen"] (trimmed, no duplicates, max 20)
+  const techs = [...new Set((s.techs ?? "").split(",").map((t) => t.trim().slice(0, 40)).filter(Boolean))].slice(0, 20);
   const supabase = await db();
   const { error } = await supabase.from("profiles").update({
-    business_name: s.business_name, business_phone: s.business_phone || null, timezone: s.timezone, digest_enabled: s.digest_enabled === "on",
+    business_name: s.business_name, business_phone: s.business_phone || null, timezone: s.timezone, digest_enabled: s.digest_enabled === "on", techs,
   }).eq("id", user.id);
   if (error) return { error: "Could not save. Please try again." };
   revalidatePath("/app", "layout");

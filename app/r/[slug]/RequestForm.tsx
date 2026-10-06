@@ -2,7 +2,7 @@
 import { useActionState } from "react";
 import { submitRequest, type IntakeState } from "@/lib/actions/intake";
 
-export function RequestForm({ slug, business }: { slug: string; business: string }) {
+export function RequestForm({ slug, business, referral }: { slug: string; business: string; referral?: string }) {
   const [state, action, pending] = useActionState<IntakeState, FormData>(submitRequest.bind(null, slug), {});
   const v = state.values ?? {};
 
@@ -20,6 +20,7 @@ export function RequestForm({ slug, business }: { slug: string; business: string
 
   return (
     <form action={action} key={JSON.stringify(v)} className="card mt-8 flex flex-col gap-4 p-5 md:p-7">
+      {referral && <input type="hidden" name="ref" value={referral} />}
       {/* spam trap: hidden from people, filled by bots */}
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
         <label htmlFor="company_website">Website</label>

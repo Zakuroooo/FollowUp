@@ -5,6 +5,9 @@ self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
 self.addEventListener("push", (event) => {
   let a = { title: "FollowUp", body: "You have a new request", url: "/app" };
   try { a = { ...a, ...event.data.json() }; } catch { /* plain text push */ }
+  // If FollowUp is open in a tab, tell it right away so it plays the alert sound and refreshes.
+  event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true })
+    .then((wins) => wins.forEach((w) => w.postMessage({ type: "followup-alert", alert: a }))));
   event.waitUntil(self.registration.showNotification(a.title, {
     body: a.body,
     icon: "/icon-192.png",
