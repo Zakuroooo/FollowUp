@@ -8,7 +8,6 @@ jobs:
   e2e:
     name: End-to-end (real browser + throwaway local Supabase)
     runs-on: ubuntu-latest
-    needs: check
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
