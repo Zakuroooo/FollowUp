@@ -8,8 +8,8 @@
 | Styling | **Tailwind CSS v4** + a custom design system | Fast, consistent, no generic component-library look |
 | Database | **Supabase Postgres** | Relational data (jobs → events), constraints, Row-Level Security |
 | Auth | **Supabase Auth**: email/password + **anonymous sign-in** for the guest demo | Built-in, secure sessions; guests get a private sandbox |
-| AI | **Groq** (`llama-3.1-8b-instant`), JSON mode | Fast and free tier; small model is enough for extraction/classification |
-| Email | **Resend** | Free tier; simple API for the 7 AM digest and emergency alerts |
+| AI | **Groq** (`openai/gpt-oss-20b`, configurable), JSON mode, cache + daily cap | Fast and cheap; a small model is enough for extraction/classification. Every feature has a rules/template fallback |
+| Email | **Resend** (HTTP API) | Free tier; instant website-request alert + 7 AM call list (Vercel Cron, 11:00 UTC). Only to the verified login email |
 | Scheduler | **Vercel Cron** | Triggers the morning digest; no server to run |
 | Hosting | **Vercel** | Zero-config for Next.js |
 | Tests | **Vitest** for the rules engine & triage | The logic that decides "who to call" must be proven |

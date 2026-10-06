@@ -13,3 +13,12 @@
 | D9 | Groq small model | Fast, free tier, enough for extraction/classification | Large models (slower, costlier, unnecessary) |
 | D10 | Email (not SMS) for digest/alerts in V2 | Free and demoable; SMS needs a paid US number | Twilio SMS (designed, not built) |
 | D11 | Mobile-first | She runs the business from her phone | Desktop-first admin UI |
+| D12 | "Today" renamed **Call list**; home shows one "Call first" card | The word "Today" didn't say what the page does; one obvious first action beats a wall of rows | A dashboard of tiles |
+| D13 | **No answer → back tomorrow** (one tap) | A customer not picking up is the most common way a follow-up silently dies | Leaving it on today's list (it gets ignored) |
+| D14 | **Time to call back** (median hours to first conversation) is the headline number | It is the number behind the lost $2,000 freezer job; if it goes down, the product works | Revenue charts ("nothing fancy") |
+| D15 | Lost reasons from a fixed list | Free text can't be counted; "price" vs "never heard back" need different fixes | Free-text only |
+| D16 | Website form merges a repeat only into a job that also came from the form | An unauthenticated visitor must never edit jobs the owner typed in | Merging by phone into any open job |
+| D17 | Emails only to the account's own verified login email; none for guest demos | Otherwise the free demo is a spam relay through our email account | A free-text "send to" field |
+| D18 | Profile columns locked at the database (column GRANTs) | RLS says *which rows*; GRANTs say *which columns* — users can't flip is_guest or the sent-today marker | Trusting the app code alone |
+| D19 | AI: Groq `openai/gpt-oss-20b`, JSON mode, cache + daily cap, rule fallbacks for every feature | Fast and cheap; the app must work with no key and degrade, not break | Making AI a hard dependency |
+| D20 | Nothing is ever sent to a customer automatically | Denise owns the relationship; drafts are copied/sent by her | Auto-texting customers |

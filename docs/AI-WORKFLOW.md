@@ -20,7 +20,7 @@ Before any code, we wrote the context an AI agent needs to make good decisions:
 | **Context7** MCP | Docs | Current Next.js 15 / Supabase docs → no hallucinated APIs |
 | **Supabase** MCP | Database | Applied migrations and inspected RLS policies |
 | **Vercel** + **GitHub** MCP | Deploy / repo | Deployments and repo operations |
-| **Claude Design** | Design | Mocked up the landing page and Today screen before coding |
+| **Claude Design** | Design | Mocked up the Call list design direction before coding; later iterated on screenshots taken in a headless browser |
 
 ## 3. The loop we used for every feature
 1. **Plan** — state the feature in Denise's words + acceptance check.
@@ -42,3 +42,10 @@ Before any code, we wrote the context an AI agent needs to make good decisions:
 - `/verify` — lint + typecheck + tests + build; stop on first failure.
 - `/demo-data` — reset the signed-in account to realistic demo jobs.
 - `/explain <file>` — explain a file in simple English + Hinglish (for learning the codebase).
+
+## How the build was verified (not just "it compiles")
+
+- **Unit tests** (Vitest, 24): every call-list rule, snooze/coming-up, time to call back, urgency triage, phone matching, AI fallbacks.
+- **Browser tests** (Playwright, 4): the reviewer's demo path, stage separation + CSV, route protection, a public website request landing as an emergency.
+- **Scripted click-throughs** in headless Chrome after every feature, plus screenshots at 1470 px (MacBook) and 390 px (phone) reviewed before each deploy.
+- **Security review**: the `security-guidance` plugin reviewed each commit. It caught two real issues in V2 (the demo could be used to send email to any address; the public form could append to jobs it didn't create). Both were fixed, and the database-level fix was proven with a test that tries to change locked columns as a guest.

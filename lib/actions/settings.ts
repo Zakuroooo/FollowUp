@@ -8,6 +8,8 @@ import { getProfile, listJobs } from "@/lib/data";
 import { buildDigest } from "@/lib/digest";
 import { sendEmail } from "@/lib/email";
 import { TIMEZONES } from "@/lib/timezones";
+import { admin } from "@/lib/db/admin";
+import { todayIn } from "@/lib/rules";
 
 
 
@@ -16,7 +18,6 @@ export type SettingsState = { ok?: string; error?: string };
 const Settings = z.object({
   business_name: z.string().trim().min(2, "Enter the business name").max(80),
   timezone: z.enum(TIMEZONES.map(([tz]) => tz) as [string, ...string[]]),
-  digest_email: z.string().trim().max(120).email("That email doesn't look right").or(z.literal("")),
   digest_enabled: z.literal("on").optional(),
 });
 
@@ -28,25 +29,39 @@ export async function saveSettings(_prev: SettingsState, form: FormData): Promis
   const s = parsed.data;
   const supabase = await db();
   const { error } = await supabase.from("profiles").update({
-    business_name: s.business_name, timezone: s.timezone,
-    digest_email: s.digest_email || null, digest_enabled: s.digest_enabled === "on",
+    business_name: s.business_name, timezone: s.timezone, digest_enabled: s.digest_enabled === "on",
   }).eq("id", user.id);
   if (error) return { error: "Could not save. Please try again." };
   revalidatePath("/app", "layout");
   return { ok: "Saved" };
 }
 
-/** "Send me today's list now": the same email the 7 AM job sends, on demand. */
+/**
+ * "Send me today's list now": the same email the 7 AM job sends, on demand.
+ * Abuse limits: only to the account's own verified login email, never for guest demos, at most once a day.
+ */
 export async function sendDigestNow(_prev: SettingsState): Promise<SettingsState> {
   const user = await currentUser();
   if (!user) redirect("/login");
   const [profile, jobs] = await Promise.all([getProfile(), listJobs()]);
-  if (!profile?.digest_email) return { error: "Add an email address above and save first." };
-  const mail = buildDigest(profile, jobs);
-  if (!mail) return { error: "Add an email address above and save first." };
+  if (!profile || profile.is_guest || !user.email) return { error: "The demo can't send email. Create an account to get the 7 AM list." };
+  if (!user.email_confirmed_at) return { error: "Confirm your email address first (check your inbox), then try again." };
+  const mail = buildDigest({ ...profile, digest_email: user.email }, jobs);
+  if (!mail) return { error: "Nothing to send." };
+
+  // Claim today's slot in ONE statement before sending, so two fast clicks can't both send.
+  const today = todayIn(profile.timezone, new Date());
+  const db = admin();
+  const { data: claimed } = await db.from("profiles").update({ digest_sent_on: today })
+    .eq("id", user.id).or(`digest_sent_on.is.null,digest_sent_on.neq.${today}`).select("id");
+  if (!claimed?.length) return { error: "Today's list was already sent. You'll get the next one tomorrow at 7." };
+
   const r = await sendEmail(mail);
-  if (r.sent) return { ok: `Sent to ${profile.digest_email}` };
-  return r.reason === "not_configured"
-    ? { error: "Email sending isn't switched on for this deployment yet (no RESEND_API_KEY)." }
-    : { error: "The email service didn't accept it. Try again in a minute." };
+  if (!r.sent) {
+    await db.from("profiles").update({ digest_sent_on: profile.digest_sent_on }).eq("id", user.id); // give the slot back
+    return r.reason === "not_configured"
+      ? { error: "Email sending isn't switched on for this deployment yet (no RESEND_API_KEY)." }
+      : { error: "The email service didn't accept it. Try again in a minute." };
+  }
+  return { ok: `Sent to ${user.email}` };
 }

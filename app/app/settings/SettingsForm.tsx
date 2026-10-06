@@ -4,7 +4,7 @@ import { saveSettings, sendDigestNow, type SettingsState } from "@/lib/actions/s
 import { TIMEZONES } from "@/lib/timezones";
 import { Submit } from "@/components/Submit";
 
-type P = { business_name: string; timezone: string; digest_email: string; digest_enabled: boolean };
+type P = { business_name: string; timezone: string; digest_email: string; digest_enabled: boolean; is_guest: boolean };
 
 export function SettingsForm({ profile, formUrl, emailOn, aiOn }: { profile: P; formUrl: string; emailOn: boolean; aiOn: boolean }) {
   const [saved, save] = useActionState<SettingsState, FormData>(saveSettings, {});
@@ -51,8 +51,11 @@ export function SettingsForm({ profile, formUrl, emailOn, aiOn }: { profile: P; 
             <p className="mt-1 text-sm text-ink-2">An instant email when a website request comes in (subject starts with EMERGENCY when equipment is down), and today&apos;s call list at 7 AM.</p>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <div>
-                <label className="label" htmlFor="digest_email">Send to</label>
-                <input id="digest_email" name="digest_email" type="email" maxLength={120} placeholder="you@business.com" defaultValue={profile.digest_email} className="field" />
+                <p className="label">Sent to</p>
+                <p className="flex min-h-10 items-center rounded-lg border border-line bg-subtle px-3 text-[15px] text-ink-2">
+                  {profile.is_guest ? "Demo accounts don't get email" : profile.digest_email}
+                </p>
+                <p className="mt-1 text-[12px] text-muted">{profile.is_guest ? "Create an account to get alerts and the 7 AM list." : "Your login email, so alerts only ever go to you."}</p>
               </div>
               <label className="flex cursor-pointer items-center gap-3 self-end rounded-lg border border-line px-3.5 py-2.5 has-[:checked]:border-brand has-[:checked]:bg-brand-soft">
                 <input type="checkbox" name="digest_enabled" defaultChecked={profile.digest_enabled} className="size-4 accent-[var(--brand)]" />
@@ -70,7 +73,7 @@ export function SettingsForm({ profile, formUrl, emailOn, aiOn }: { profile: P; 
         <form action={send} className="card flex flex-wrap items-center gap-3 p-6">
           <div className="min-w-0 flex-1">
             <h2 className="text-[15px] font-semibold">Try the morning email</h2>
-            <p className="text-sm text-ink-2">Sends today&apos;s call list to the address above right now.</p>
+            <p className="text-sm text-ink-2">Sends today&apos;s call list to your login email now. Once a day.</p>
           </div>
           <Submit className="btn-line">Send me today&apos;s list now</Submit>
           {sent.ok && <p role="status" className="w-full text-sm text-brand">{sent.ok}</p>}

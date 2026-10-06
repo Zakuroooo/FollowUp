@@ -30,11 +30,13 @@ export async function GET(req: Request) {
     const { data: jobs } = await db.from("jobs").select("*").eq("owner_id", p.id);
     const mail = buildDigest(p, ((jobs ?? []) as Job[]).map((j) => ({ ...j, quote_amount: j.quote_amount === null ? null : Number(j.quote_amount) })), now);
     if (!mail) { result.skipped++; continue; }
+    // Claim the day atomically (an overlapping run or a manual send can't double-send), release on failure.
+    const { data: claimed } = await db.from("profiles").update({ digest_sent_on: today })
+      .eq("id", p.id).or(`digest_sent_on.is.null,digest_sent_on.neq.${today}`).select("id");
+    if (!claimed?.length) { result.skipped++; continue; }
     const r = await sendEmail(mail);
-    if (r.sent) {
-      await db.from("profiles").update({ digest_sent_on: today }).eq("id", p.id);
-      result.sent++;
-    } else result.failed++;
+    if (r.sent) result.sent++;
+    else { result.failed++; await db.from("profiles").update({ digest_sent_on: p.digest_sent_on }).eq("id", p.id); }
   }
   return Response.json(result);
 }

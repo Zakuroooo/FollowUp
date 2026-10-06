@@ -86,8 +86,14 @@ alter table public.ai_usage   enable row level security;
 alter table public.ai_cache   enable row level security;   -- no policies: server (service role) only
 alter table public.form_hits  enable row level security;   -- no policies: server (service role) only
 
-create policy "own profile" on public.profiles
-  for all using (id = auth.uid()) with check (id = auth.uid());
+create policy "own profile read" on public.profiles
+  for select using (id = auth.uid());
+create policy "own profile update" on public.profiles
+  for update using (id = auth.uid()) with check (id = auth.uid());
+-- Column-level lock: a signed-in user may change only these. is_guest, intake_slug, digest_email
+-- and digest_sent_on are set by the server (service role) so nobody can turn the app into a mail relay.
+revoke insert, update, delete on public.profiles from authenticated, anon;
+grant update (business_name, timezone, digest_enabled) on public.profiles to authenticated;
 create policy "own jobs" on public.jobs
   for all using (owner_id = auth.uid()) with check (owner_id = auth.uid());
 create policy "own events" on public.job_events
@@ -105,7 +111,7 @@ begin
     coalesce(nullif(new.raw_user_meta_data ->> 'business_name', ''),
              case when new.is_anonymous then 'Denise''s Refrigeration (demo)' else 'My business' end),
     substr(replace(new.id::text, '-', ''), 1, 10),
-    new.email,
+    case when new.email_confirmed_at is not null then new.email end,   -- only a confirmed address ever gets email
     coalesce(new.is_anonymous, false)
   );
   return new;
@@ -114,6 +120,21 @@ end $$;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- When Supabase confirms a sign-up email (or the address changes and is confirmed), that becomes the alert address.
+create function public.handle_email_confirmed() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if new.email_confirmed_at is not null and new.email is not null
+     and (old.email_confirmed_at is null or old.email is distinct from new.email) then
+    update public.profiles set digest_email = new.email where id = new.id;
+  end if;
+  return new;
+end $$;
+
+create trigger on_auth_email_confirmed
+  after update of email, email_confirmed_at on auth.users
+  for each row execute function public.handle_email_confirmed();
 
 -- ── demo data for the signed-in account (the guest demo + "load sample jobs") ─
 -- SECURITY INVOKER (default): runs as the caller, so RLS still applies.

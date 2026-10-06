@@ -49,8 +49,23 @@ ol.q{padding-left:20px} ol.q li{margin:8px 0;color:var(--ink2)} ol.q li b{displa
     <tr><td>All jobs</td><td>Every job with its stage: New → Quote → Their yes → Scheduled → Done (or Lost). Filter chips + search.</td></tr>
     <tr><td>Add a job</td><td>15-second form. Words like “freezer down” auto-flag an emergency. Same phone twice → warning.</td></tr>
     <tr><td>Job page</td><td>Call/text button, one-tap “next step”, log a call, set a reminder, full history.</td></tr>
-    <tr><td>Guest demo</td><td>One click → a private sandbox with 12 realistic jobs. No signup.</td></tr>
+    <tr><td>Guest demo</td><td>One click → a private sandbox with 13 realistic jobs. No signup.</td></tr>
+    <tr><td>No answer</td><td>One tap pushes the call to tomorrow. It waits under <b>Coming up</b> and comes back on its day.</td></tr>
+    <tr><td>Time to call back</td><td>Median hours from request to first real conversation. The number behind the lost $2,000 job.</td></tr>
+    <tr><td>Lost reasons</td><td>Picked from a fixed list, so "price" vs "never heard back" can be counted. CSV export for the bookkeeper.</td></tr>
   </table></div>
+
+  <h2><span class="n">02b</span>Version 2: automation</h2>
+  <div class="box tw"><table>
+    <tr><th>Feature</th><th>How it works (one line)</th></tr>
+    <tr><td>Website form</td><td><code>/r/&lt;code&gt;</code>: customers submit, job lands on the call list. Spam trap + rate limit + repeat merge.</td></tr>
+    <tr><td>Alert email</td><td>Instant email to Denise; subject starts EMERGENCY if equipment is down. Save first, email second.</td></tr>
+    <tr><td>7 AM email</td><td>Vercel Cron at 11:00 UTC = 7 AM Eastern. <code>digest_sent_on</code> stops double-sends.</td></tr>
+    <tr><td>Paste → job (AI)</td><td>Paste a text/voicemail; Groq returns JSON; form fills; she checks and saves. No key → regex fallback.</td></tr>
+    <tr><td>Triage (AI)</td><td>Rules first. AI only when rules are unsure, and it can only <b>raise</b> urgency.</td></tr>
+    <tr><td>Draft follow-up (AI)</td><td>Editable text to copy or open in Messages. Never sent automatically.</td></tr>
+  </table></div>
+  <p class="hi">AI ka rule simple hai: AI sirf help karta hai, decide rules karte hain. Har AI feature ka bina-AI fallback hai, aur cache + daily limit se cost control.</p>
 
   <h2><span class="n">03</span>Architecture — the map</h2>
   <pre class="mermaid">
@@ -99,6 +114,9 @@ flowchart LR
     <li><b>What is RLS, and what happens without it?</b>Database-level filter per user. Without it, one missing <code>where</code> leaks every customer’s data.</li>
     <li><b>How does the guest demo stay private?</b>Supabase anonymous sign-in → a real user id → seed function inserts jobs owned by that id → RLS.</li>
     <li><b>What would you build next?</b>Public request form so web leads land automatically, a 7 AM email digest, and an emergency alert. Tech scheduling after that — she said it’s “nice later”.</li>
+    <li><b>Why can the AI only raise urgency?</b>A missed emergency costs $2,000; a false alarm costs one phone call. So the safe direction is "more urgent". The AI also only runs when the rules are unsure, which keeps cost near zero.</li>
+    <li><b>Tell me about a security bug you found.</b>The review caught that the free demo could send email to any address (a spam relay). Fix: emails only to the verified login email, none for guests, once a day, and profile columns locked in the database with column GRANTs, proven by a test.</li>
+    <li><b>Why is "time to call back" the headline number?</b>It measures exactly the failure Denise described. If it goes down, the product is working.</li>
     <li><b>What did you skip on purpose?</b>Invoicing, tech dispatch, SMS sending, multi-user teams. She said “nothing fancy” — scope was her words.</li>
   </ol>
 </div>

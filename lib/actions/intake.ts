@@ -51,7 +51,7 @@ export async function submitRequest(slug: string, _prev: IntakeState, form: Form
   const input = parsed.data;
 
   // 4. Which business is this form for?
-  const { data: profile } = await db.from("profiles").select("id, digest_email").eq("intake_slug", slug).maybeSingle();
+  const { data: profile } = await db.from("profiles").select("id, digest_email, is_guest").eq("intake_slug", slug).maybeSingle();
   if (!profile) return { error: "This form link isn't active.", values };
 
   // 5. Urgency: the customer's checkbox, else rules, else (only if unsure) AI. Can only go up.
@@ -65,22 +65,23 @@ export async function submitRequest(slug: string, _prev: IntakeState, form: Form
     if (ai) { urgent = true; urgency_source = "ai"; urgency_reason = `AI: ${ai.reason}`; }
   }
 
-  // 6. Same phone with an open job → add to it instead of creating a duplicate.
+  // 6. The same customer sending the form again: match ONLY an open job that itself came from the website
+  //    form. A stranger who knows a phone number must not be able to edit jobs Denise entered herself,
+  //    so the resubmission is recorded in history (not merged into her notes) and can only raise urgency.
   const key = phoneKey(input.phone);
-  const { data: open } = await db.from("jobs").select("*").eq("owner_id", profile.id).not("stage", "in", "(done,lost)");
+  const { data: open } = await db.from("jobs").select("*").eq("owner_id", profile.id).eq("source", "web_form").not("stage", "in", "(done,lost)");
   const dup = (open ?? []).find((j) => phoneKey(j.phone) === key) as Job | undefined;
   let job: Job | null = null;
   let alert = true;
 
   if (dup) {
     const becameUrgent = urgent && !dup.urgent;
-    const note = `Sent the website form again: ${input.issue}`.slice(0, 400);
-    const { data } = await db.from("jobs").update({
-      notes: [dup.notes, note].filter(Boolean).join("\n").slice(0, 2000),
-      ...(becameUrgent ? { urgent: true, urgency_source, urgency_reason } : {}),
-    }).eq("id", dup.id).select("*").single();
-    job = data as Job;
-    await db.from("job_events").insert({ job_id: dup.id, owner_id: profile.id, kind: "note", detail: becameUrgent ? "Customer sent the form again, now says equipment is down" : "Customer sent the form again" });
+    if (becameUrgent) await db.from("jobs").update({ urgent: true, urgency_source, urgency_reason }).eq("id", dup.id);
+    await db.from("job_events").insert({
+      job_id: dup.id, owner_id: profile.id, kind: "note",
+      detail: `Customer sent the website form again${becameUrgent ? ", now says equipment is down" : ""}: ${input.issue}`.slice(0, 400),
+    });
+    job = { ...dup, ...(becameUrgent ? { urgent: true } : {}) };
     alert = becameUrgent; // only re-alert when it got worse
   } else {
     const { data, error } = await db.from("jobs").insert({
@@ -94,7 +95,7 @@ export async function submitRequest(slug: string, _prev: IntakeState, form: Form
   }
 
   // 7. Saved. Now tell the owner (a failed email is logged, never shown to the customer).
-  if (alert && job && profile.digest_email) {
+  if (alert && job && profile.digest_email && !profile.is_guest) {
     await sendEmail(alertEmail(profile.digest_email, job, input.email ?? undefined));
   }
   return { ok: true };
