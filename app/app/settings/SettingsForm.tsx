@@ -4,7 +4,7 @@ import { saveSettings, sendDigestNow, type SettingsState } from "@/lib/actions/s
 import { TIMEZONES } from "@/lib/timezones";
 import { Submit } from "@/components/Submit";
 
-type P = { business_name: string; timezone: string; digest_email: string; digest_enabled: boolean; is_guest: boolean };
+type P = { business_name: string; business_phone: string; timezone: string; digest_email: string; digest_enabled: boolean; is_guest: boolean };
 
 export function SettingsForm({ profile, formUrl, emailOn, aiOn }: { profile: P; formUrl: string; emailOn: boolean; aiOn: boolean }) {
   const [saved, save] = useActionState<SettingsState, FormData>(saveSettings, {});
@@ -37,6 +37,11 @@ export function SettingsForm({ profile, formUrl, emailOn, aiOn }: { profile: P; 
             <div>
               <label className="label" htmlFor="business_name">Business name</label>
               <input id="business_name" name="business_name" required minLength={2} maxLength={80} defaultValue={profile.business_name} className="field" />
+            </div>
+            <div>
+              <label className="label" htmlFor="business_phone">Business phone</label>
+              <input id="business_phone" name="business_phone" type="tel" maxLength={40} placeholder="(614) 555-0100" defaultValue={profile.business_phone} className="field" />
+              <p className="mt-1 text-[12px] text-muted">Shown on your request form so emergencies can call you straight away.</p>
             </div>
             <div>
               <label className="label" htmlFor="timezone">Time zone</label>

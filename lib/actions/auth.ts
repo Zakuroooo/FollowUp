@@ -60,3 +60,25 @@ function safeNext(v: FormDataEntryValue | null): string {
   const s = typeof v === "string" ? v : "";
   return s.startsWith("/app") ? s : "/app"; // never redirect off-site
 }
+
+/** Forgot password: always the same answer, so nobody can probe which emails have accounts. */
+export async function requestReset(_prev: AuthState, form: FormData): Promise<AuthState & { sent?: boolean }> {
+  const email = z.string().trim().email().safeParse(form.get("email"));
+  if (!email.success) return { error: "Enter a valid email" };
+  const supabase = await db();
+  const base = process.env.APP_URL ?? "http://localhost:3200";
+  await supabase.auth.resetPasswordForEmail(email.data, { redirectTo: `${base}/auth/callback?next=/reset` });
+  return { sent: true };
+}
+
+/** Set a new password (the reset link signed you in for this one step). */
+export async function setNewPassword(_prev: AuthState, form: FormData): Promise<AuthState> {
+  const password = z.string().min(8, "Password must be at least 8 characters").safeParse(form.get("password"));
+  if (!password.success) return { error: password.error.issues[0].message };
+  const supabase = await db();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) return { error: "This reset link has expired. Ask for a new one." };
+  const { error } = await supabase.auth.updateUser({ password: password.data });
+  if (error) return { error: "Could not set the password. Try a different one." };
+  redirect("/app");
+}

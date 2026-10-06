@@ -252,3 +252,41 @@ export async function draftMessage(id: string): Promise<{ text: string; via: "ai
   if (!job || !profile) return { error: "Job not found." };
   return draftFollowUp(job, profile.business_name, user.id);
 }
+
+const Details = z.object({
+  customer_name: z.string().trim().min(1, "Customer name is required").max(120),
+  business: opt(120),
+  phone: opt(40),
+  issue: z.string().trim().min(1, "Say what's wrong").max(1000),
+  notes: opt(2000),
+});
+
+/** Fix a typo or add what you learned on the call. History records what changed. */
+export async function updateDetails(id: string, _prev: FormState, form: FormData): Promise<FormState> {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const job = await getJob(id);
+  if (!job) return { error: "Job not found." };
+  const parsed = Details.safeParse(Object.fromEntries(form));
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const d = parsed.data;
+  const changed = (Object.keys(d) as (keyof typeof d)[]).filter((k) => (job[k] ?? null) !== (d[k] ?? null));
+  if (changed.length === 0) return { error: "Nothing changed." };
+  const supabase = await db();
+  const { error } = await supabase.from("jobs").update(d).eq("id", id);
+  if (error) return { error: "Could not save. Please try again." };
+  const names: Record<string, string> = { customer_name: "name", business: "business", phone: "phone", issue: "problem", notes: "notes" };
+  await event(id, user.id, "note", `Edited ${changed.map((k) => names[k]).join(", ")}`);
+  refresh(id);
+  return { values: { saved: "1" } };
+}
+
+/** An internal note ("gate code 4411", "ask for Mike"). Doesn't count as contacting the customer. */
+export async function addNote(id: string, form: FormData) {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const note = String(form.get("note") ?? "").trim().slice(0, 300);
+  if (!note) return;
+  await event(id, user.id, "note", `Note: ${note}`);
+  refresh(id);
+}

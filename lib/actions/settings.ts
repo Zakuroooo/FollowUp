@@ -17,6 +17,7 @@ export type SettingsState = { ok?: string; error?: string };
 
 const Settings = z.object({
   business_name: z.string().trim().min(2, "Enter the business name").max(80),
+  business_phone: z.string().trim().max(40).refine((p) => !p || p.replace(/\D/g, "").length >= 10, "Enter a full phone number"),
   timezone: z.enum(TIMEZONES.map(([tz]) => tz) as [string, ...string[]]),
   digest_enabled: z.literal("on").optional(),
 });
@@ -29,7 +30,7 @@ export async function saveSettings(_prev: SettingsState, form: FormData): Promis
   const s = parsed.data;
   const supabase = await db();
   const { error } = await supabase.from("profiles").update({
-    business_name: s.business_name, timezone: s.timezone, digest_enabled: s.digest_enabled === "on",
+    business_name: s.business_name, business_phone: s.business_phone || null, timezone: s.timezone, digest_enabled: s.digest_enabled === "on",
   }).eq("id", user.id);
   if (error) return { error: "Could not save. Please try again." };
   revalidatePath("/app", "layout");
@@ -40,7 +41,7 @@ export async function saveSettings(_prev: SettingsState, form: FormData): Promis
  * "Send me today's list now": the same email the 7 AM job sends, on demand.
  * Abuse limits: only to the account's own verified login email, never for guest demos, at most once a day.
  */
-export async function sendDigestNow(_prev: SettingsState): Promise<SettingsState> {
+export async function sendDigestNow(): Promise<SettingsState> {
   const user = await currentUser();
   if (!user) redirect("/login");
   const [profile, jobs] = await Promise.all([getProfile(), listJobs()]);

@@ -38,6 +38,7 @@ export interface JobEvent {
 export interface Profile {
   id: string;
   business_name: string;
+  business_phone: string | null;
   timezone: string;
   intake_slug: string;
   digest_email: string | null;

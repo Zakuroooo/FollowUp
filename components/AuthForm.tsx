@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { logIn, signUp, tryDemo, type AuthState } from "@/lib/actions/auth";
 import { Logo } from "./ui";
 import { ParticleField } from "./ParticleField";
@@ -8,6 +8,7 @@ import { ParticleField } from "./ParticleField";
 export function AuthForm({ mode, next, notice }: { mode: "login" | "signup"; next?: string; notice?: string }) {
   const [state, action, pending] = useActionState<AuthState, FormData>(mode === "login" ? logIn : signUp, {});
   const login = mode === "login";
+  const [show, setShow] = useState(false);
 
   return (
     <div className="grid min-h-screen lg:grid-cols-[1fr_1.05fr]">
@@ -39,7 +40,11 @@ export function AuthForm({ mode, next, notice }: { mode: "login" | "signup"; nex
             </div>
             <div>
               <label className="label" htmlFor="password">Password</label>
-              <input id="password" name="password" type="password" required minLength={8} autoComplete={login ? "current-password" : "new-password"} className="field" />
+              <div className="relative">
+                <input id="password" name="password" type={show ? "text" : "password"} required minLength={8} autoComplete={login ? "current-password" : "new-password"} className="field pr-16" />
+                <button type="button" onClick={() => setShow((v) => !v)} aria-pressed={show} className="absolute inset-y-0 right-0 px-3 text-[13px] font-medium text-muted hover:text-ink">{show ? "Hide" : "Show"}</button>
+              </div>
+              {login && <Link href="/forgot" className="mt-1.5 inline-block text-[13px] text-muted underline-offset-4 hover:text-ink hover:underline">Forgot password?</Link>}
               {!login && <p className="mt-1 text-xs text-muted">At least 8 characters.</p>}
             </div>
             {(state.error || notice) && <p role="alert" className="rounded-lg bg-urgent-soft px-3 py-2 text-sm text-urgent-ink">{state.error ?? notice}</p>}

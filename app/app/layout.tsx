@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { getProfile, listJobs } from "@/lib/data";
 import { callList, todayIn } from "@/lib/rules";
 import { logOut } from "@/lib/actions/auth";
+import { loadDemoJobs } from "@/lib/actions/jobs";
+import { LiveRefresh } from "@/components/LiveRefresh";
+import { Submit } from "@/components/Submit";
 import { Logo, LogoMark } from "@/components/ui";
 import { NavLinks, MobileNav } from "./nav";
 import { Sparkles } from "@/components/Sparkles";
@@ -14,6 +17,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const now = new Date();
   const calls = callList(jobs, now, todayIn(profile.timezone, now)).total;
   const initial = profile.business_name.trim()[0]?.toUpperCase() ?? "B";
+  const newest = jobs.reduce<(typeof jobs)[number] | null>((a, j) => (!a || j.created_at > a.created_at ? j : a), null);
+  const latest = newest ? { id: newest.id, at: newest.created_at, name: newest.business ?? newest.customer_name, urgent: newest.urgent } : null;
+  const needsSetup = !profile.is_guest && (profile.business_name === "My business" || !profile.business_phone);
 
   return (
     <div className="min-h-screen md:flex">
@@ -30,7 +36,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <div className="text-navy-muted">{profile.is_guest ? "Private demo" : profile.digest_email}</div>
             </div>
           </div>
-          <form action={logOut}><button className="mt-3 text-[13px] text-navy-muted hover:text-white">Log out</button></form>
+          <div className="mt-3 flex gap-4 text-[13px]">
+            {profile.is_guest && <form action={loadDemoJobs}><Submit className="text-navy-muted hover:text-white">Reset demo</Submit></form>}
+            <form action={logOut}><button className="text-navy-muted hover:text-white">Log out</button></form>
+          </div>
         </div>
       </aside>
 
@@ -40,8 +49,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </header>
 
       <main className="min-w-0 flex-1 px-4 pb-28 pt-6 md:px-8 md:pb-16 md:pt-10 xl:px-12">
+        {needsSetup && (
+          <a href="/app/settings" className="mx-auto mb-6 flex max-w-[1240px] flex-wrap items-center justify-between gap-2 rounded-xl border border-brand/25 bg-brand-soft px-4 py-3 text-sm">
+            <span><span className="font-semibold">Finish setting up:</span> add your business name and phone so customers see them on your request form.</span>
+            <span className="font-medium text-brand">Open Settings →</span>
+          </a>
+        )}
         {children}
       </main>
+      <LiveRefresh latest={latest} />
       <MobileNav />
     </div>
   );

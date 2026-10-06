@@ -5,6 +5,7 @@
 create table public.profiles (
   id             uuid primary key references auth.users (id) on delete cascade,
   business_name  text not null default 'My business',
+  business_phone text check (length(business_phone) <= 40),   -- shown on the public form for emergencies
   timezone       text not null default 'America/New_York',
   intake_slug    text not null unique,          -- public request form: /r/<slug>
   digest_email   text,
@@ -93,7 +94,7 @@ create policy "own profile update" on public.profiles
 -- Column-level lock: a signed-in user may change only these. is_guest, intake_slug, digest_email
 -- and digest_sent_on are set by the server (service role) so nobody can turn the app into a mail relay.
 revoke insert, update, delete on public.profiles from authenticated, anon;
-grant update (business_name, timezone, digest_enabled) on public.profiles to authenticated;
+grant update (business_name, business_phone, timezone, digest_enabled) on public.profiles to authenticated;
 create policy "own jobs" on public.jobs
   for all using (owner_id = auth.uid()) with check (owner_id = auth.uid());
 create policy "own events" on public.job_events
@@ -105,11 +106,12 @@ create policy "own usage" on public.ai_usage
 create function public.handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
-  insert into public.profiles (id, business_name, intake_slug, digest_email, is_guest)
+  insert into public.profiles (id, business_name, business_phone, intake_slug, digest_email, is_guest)
   values (
     new.id,
     coalesce(nullif(new.raw_user_meta_data ->> 'business_name', ''),
              case when new.is_anonymous then 'Denise''s Refrigeration (demo)' else 'My business' end),
+    case when new.is_anonymous then '(614) 555-0100' end,
     substr(replace(new.id::text, '-', ''), 1, 10),
     case when new.email_confirmed_at is not null then new.email end,   -- only a confirmed address ever gets email
     coalesce(new.is_anonymous, false)

@@ -2,6 +2,7 @@
 import "server-only";
 import { db } from "@/lib/db/server";
 import type { Job, JobEvent, Profile } from "@/lib/types";
+import { phoneKey } from "@/lib/phone";
 
 function normalise(row: Record<string, unknown>): Job {
   const r = row as unknown as Job & { quote_amount: string | number | null };
@@ -32,4 +33,12 @@ export async function listEvents(jobId: string): Promise<JobEvent[]> {
   const supabase = await db();
   const { data } = await supabase.from("job_events").select("*").eq("job_id", jobId).order("at", { ascending: false });
   return (data as JobEvent[]) ?? [];
+}
+
+/** Other jobs for the same phone number: a repeat customer's history at a glance. */
+export async function otherJobsFor(job: Job): Promise<Job[]> {
+  const key = phoneKey(job.phone);
+  if (!key) return [];
+  const all = await listJobs();
+  return all.filter((j) => j.id !== job.id && phoneKey(j.phone) === key);
 }

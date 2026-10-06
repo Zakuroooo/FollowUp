@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
-import { getJob, listEvents } from "@/lib/data";
-import { logCall, moveBack, moveStage, noAnswer, setReminder, setVisitDate, toggleUrgent } from "@/lib/actions/jobs";
+import { getJob, listEvents, otherJobsFor } from "@/lib/data";
+import { addNote, logCall, moveBack, moveStage, noAnswer, setReminder, setVisitDate, toggleUrgent } from "@/lib/actions/jobs";
 import { ago } from "@/lib/rules";
 import { FLOW, LOST_REASONS, SOURCE_LABEL, STAGE_LABEL, STAGE_SHORT, isOpen, previousStage } from "@/lib/stages";
 import { dialable } from "@/lib/phone";
 import { Submit } from "@/components/Submit";
 import { Sparkles } from "@/components/Sparkles";
 import { DraftMessage } from "@/components/DraftMessage";
+import { EditDetails } from "@/components/EditDetails";
+import Link from "next/link";
 import { BackLink, PhoneIcon, money } from "@/components/ui";
 import type { Stage } from "@/lib/types";
 
@@ -29,7 +31,7 @@ export default async function JobPage({ params, searchParams }: {
   const { added } = await searchParams;
   const job = await getJob(id);
   if (!job) notFound();
-  const events = await listEvents(id);
+  const [events, others] = await Promise.all([listEvents(id), otherJobsFor(job)]);
   const now = new Date();
   const tel = dialable(job.phone);
   const open = isOpen(job.stage);
@@ -204,9 +206,18 @@ export default async function JobPage({ params, searchParams }: {
                   </div>
                   <Submit className="btn-line">Set</Submit>
                 </form>
+                <form action={addNote.bind(null, id)} className="flex items-end gap-2 md:col-span-2">
+                  <div className="flex-1">
+                    <label className="label" htmlFor="internal_note">Internal note <span className="font-normal text-muted">(doesn&apos;t count as contacting them)</span></label>
+                    <input id="internal_note" name="note" maxLength={300} placeholder="e.g. back door, ask for Mike; unit is a True T-49" className="field" />
+                  </div>
+                  <Submit className="btn-line">Add</Submit>
+                </form>
               </div>
             </section>
           )}
+
+          <EditDetails job={job} />
         </div>
 
         {/* History: answers "did I send the quote? did they say yes?" */}
@@ -224,6 +235,21 @@ export default async function JobPage({ params, searchParams }: {
               </li>
             ))}
           </ol>
+          {others.length > 0 && (
+            <div className="mt-6 border-t border-line-2 pt-5">
+              <h3 className="text-[13px] font-semibold">Other jobs for this customer <span className="font-mono font-normal text-muted">{others.length}</span></h3>
+              <ul className="mt-3 flex flex-col gap-2">
+                {others.map((o) => (
+                  <li key={o.id}>
+                    <Link href={`/app/jobs/${o.id}`} className="block rounded-lg border border-line px-3 py-2.5 text-sm hover:bg-subtle/60">
+                      <span className="font-medium">{o.issue}</span>
+                      <span className="block text-[12px] text-muted">{STAGE_SHORT[o.stage]} · {ago(o.created_at, now)}{o.quote_amount !== null ? ` · ${money(o.quote_amount)}` : ""}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
       </div>
     </div>

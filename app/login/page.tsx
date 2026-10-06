@@ -4,6 +4,7 @@ import { AuthForm } from "@/components/AuthForm";
 const NOTICES: Record<string, string> = {
   demo_unavailable: "The demo is unavailable right now. Please try again in a minute.",
   demo_data: "We couldn't load the demo jobs. Please try again.",
+  link_expired: "That link has expired or was already used. Ask for a new one.",
 };
 
 export default async function Login({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
