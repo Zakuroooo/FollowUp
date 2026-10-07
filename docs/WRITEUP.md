@@ -75,9 +75,9 @@ Full log with the rejected options: [DECISIONS.md](DECISIONS.md).
 
 | When | What happens | Her time |
 |---|---|---|
-| Day 1 | Account, business name and phone. Copy open jobs from the notebook by pasting each line (the fields fill in). Put the request-form link on the website. | 20 min |
+| Day 1 | Account, business name and phone. Paste a page of the notebook into *Add many jobs at once*: one job per line. Scan the QR code on Settings to get alerts on her phone. Put the request-form link on the website. | 20 min |
 | Week 1 | She only uses the Call list. I check in on Friday: did anything get missed? | 0 |
-| Week 2 | Forward the website-form inbox to FollowUp, so emails become jobs. | 10 min |
+| Week 2 | Forward the website-form inbox to FollowUp, so emails become jobs. She presses *Email the steps to my helper*; the helper (or I) do it. | 0 |
 | Week 3 | Get a business number (Twilio) that rings her cell. Calls get recorded and written out, and texts land on the right job. | 15 min |
 | Week 4 | Review the Numbers page with her husband. Decide whether techs need their own view. | 30 min |
 

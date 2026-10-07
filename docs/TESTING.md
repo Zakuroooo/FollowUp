@@ -38,7 +38,10 @@ flowchart LR
 | A13 | **Try it** → *See the emails Denise gets* | The emergency email and the 7 AM list email, exactly as they're sent. |
 | A14 | **All jobs** → search a name; **Export CSV** | The job is found; a spreadsheet downloads. |
 | A15 | **Numbers** → **Create a link** → open the link in a private window | A read-only Numbers page with no login and no customer names. **Turn the link off** → the link shows "not found". |
-| A16 | Sidebar → **Fresh sample jobs** | The demo resets to a clean sample week. |
+| A16 | **Add a job** → *Moving over from a notebook?* → paste 3 lines, e.g. `Joe's Diner - fan making noise - 614-555-0101` | A live preview of 3 jobs (emergencies marked), then **Add 3 jobs** → "Added 3 jobs to your call list". Paste again: "already there, skipped". |
+| A17 | **Settings** → *Get alerts on your phone* | A QR code. Scan it with your phone camera: it opens a page with one **Turn on alerts** button. |
+| A18 | **Settings → Connect phone & email** | Email and phone cards say "send the steps to your helper", with **Email the steps to my helper** and **Copy the steps**. No technical addresses on screen. |
+| A19 | Sidebar → **Fresh sample jobs** | The demo resets to a clean sample week. |
 
 ## Part B: a real account (email, notifications, the website form)
 
@@ -48,7 +51,7 @@ flowchart LR
 |---|---|---|
 | B1 | **Create an account** → confirm the email link | You're on an empty Call list with a short "Getting started" checklist. No **Try it** in the menu: real businesses get real requests. |
 | B2 | **Settings** → business name + phone → Save | The checklist ticks the first step. |
-| B3 | **Settings → Alerts on this device → Turn on** → allow notifications | Status says "On". On iPhone, first add the site to the Home Screen. |
+| B3 | **Settings → Alerts on this device → Turn on** → allow notifications. For your phone: scan the QR code under *Get alerts on your phone*, log in, tap **Turn on alerts** | Status says "On". On iPhone, the page shows how to add it to the Home Screen first. |
 | B4 | **Settings → Connect phone & email** → open the **website form link** in a private window → fill it in, tick **equipment is down** → Send | Within seconds: a **phone/computer notification** "EMERGENCY: …", a sound if the app is open, and an **email** titled "EMERGENCY: …". The job is on top of the Call list. |
 | B5 | Do nothing for 3–6 minutes | Another notification: "Still waiting: EMERGENCY … N min and nobody has called back". It repeats every 3 minutes (max 10) until you call, move the job, or tap **I'm on it**. |
 | B6 | Fill the form again without "equipment is down" | A normal "New request: …" notification and email. No repeats. |
@@ -59,7 +62,7 @@ flowchart LR
 
 ## Part C: the doors, from a terminal (optional)
 
-Your secret address is in **Settings → Connect phone & email** (it looks like `https://…/api/inbound/<token>`). Replace `<hook>` below with it.
+Your private address is inside the steps: **Settings → Connect phone & email → Copy the steps** on the Email card, and paste them somewhere. It looks like `https://…/api/inbound/<token>/email`. Replace `<hook>` below with the part before `/email`.
 
 **An email arriving** (what an email-forwarding service sends):
 

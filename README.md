@@ -85,7 +85,7 @@ Every other automation (phone notifications, emails, the 7 AM list, the Friday c
 | **All jobs · Schedule · Numbers** | Stages, visits by day / window / technician, money and why jobs were lost |
 | **Settings → Connect** | One-time setup for the website form, referrals, email and a phone number |
 
-**Also:** public request form (`/r/<code>`) with an "equipment is down" box · referral links (`?ref=Tony`) · paste a message and AI fills the job · repeat customers recognised by phone · lost reasons from a fixed list · 3 unanswered tries → "mark lost?" (never automatic) · themed date picker with quick picks · password reset · one-click private demo.
+**Also:** paste a whole notebook page (one job per line, live preview) · scan a QR code to get alerts on her phone · setup steps she can email to whoever helps her, instead of technical screens · public request form (`/r/<code>`) with an "equipment is down" box · referral links (`?ref=Tony`) · paste a message and AI fills the job · repeat customers recognised by phone · lost reasons from a fixed list · 3 unanswered tries → "mark lost?" (never automatic) · themed date picker with quick picks · password reset · one-click private demo.
 
 ---
 
