@@ -147,8 +147,8 @@ export async function todayBrief(ownerId: string, facts: { emergencies: string[]
     ? "Nothing urgent today. Every open job is waiting on the customer."
     : `${facts.emergencies.length ? `${facts.emergencies.length} emergency${facts.emergencies.length > 1 ? " calls" : ""} first: ${facts.emergencies.slice(0, 2).join(", ")}. ` : ""}${facts.calls} calls today${facts.quotesOwed ? `, ${facts.quotesOwed} quotes to send` : ""}${facts.followUps ? `, ${facts.followUps} follow-ups` : ""}. $${facts.waitingValue.toLocaleString("en-US")} is waiting on a yes.`;
   const raw = await askJSON("brief", ownerId,
-    `You write the morning brief for the owner of a small refrigeration repair company. Two short sentences, plain words, no greeting, no emojis, no exclamation marks. Say what to do first and why, then the rest of the day in numbers. Use only the facts given. Return ONLY JSON: {"text": "..."}.`,
-    JSON.stringify({ ...facts, date: new Date().toISOString().slice(0, 10) }));
+    `You write the morning brief for the owner of a small refrigeration repair company. Two short sentences, plain words, no greeting, no emojis, no exclamation marks. Say what to do first and why, then the rest of the day in numbers. Use only the facts given; write money with a $ sign. Return ONLY JSON: {"text": "..."}.`,
+    JSON.stringify({ ...facts, waitingValue: `$${facts.waitingValue.toLocaleString("en-US")} in quotes waiting on a yes`, date: new Date().toISOString().slice(0, 10) }));
   const parsed = z.object({ text: z.string().min(20).max(320) }).safeParse(raw);
   return parsed.success ? { text: parsed.data.text.trim(), via: "ai" } : { text: fallback, via: "rules" };
 }

@@ -60,13 +60,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           const mins = Math.max(1, Math.round((now.getTime() - new Date(j.created_at).getTime()) / 60_000));
           const tel = dialable(j.phone);
           return (
-            <div key={j.id} role="alert" className="mx-auto mb-4 flex max-w-[1240px] flex-wrap items-center gap-3 rounded-xl border border-urgent/40 bg-[linear-gradient(90deg,#1a0a0d,#0c0d14)] px-4 py-3 text-white shadow-[inset_3px_0_0_var(--urgent),0_12px_30px_-16px_rgba(180,35,47,.6)]">
-              <span className="relative flex size-2.5"><span className="absolute inline-flex size-full animate-ping rounded-full bg-urgent opacity-75" /><span className="relative inline-flex size-2.5 rounded-full bg-urgent" /></span>
-              <p className="min-w-0 flex-1 text-sm text-white/80"><span className="font-semibold text-[#ff8a92]">Emergency waiting {mins < 60 ? `${mins} min` : `${Math.round(mins / 60)} h`}:</span> {j.business ?? j.customer_name}, {j.issue}
+            <div key={j.id} role="alert" className="mx-auto mb-4 flex max-w-[1240px] items-center gap-2 rounded-xl border border-urgent/40 bg-[linear-gradient(90deg,#1a0a0d,#0c0d14)] py-2 pl-3 pr-2 text-white shadow-[inset_3px_0_0_var(--urgent),0_12px_30px_-16px_rgba(180,35,47,.6)] md:flex-wrap md:gap-3 md:px-4 md:py-3">
+              <span className="relative flex size-2.5 shrink-0"><span className="absolute inline-flex size-full animate-ping rounded-full bg-urgent opacity-75" /><span className="relative inline-flex size-2.5 rounded-full bg-urgent" /></span>
+              {/* Phone: one line (who + how long). Wider screens: the problem and "+N more" too. */}
+              <a href={`/app/jobs/${j.id}`} className="min-w-0 flex-1 truncate text-[13px] text-white/80 md:hidden">
+                <span className="font-semibold text-[#ff8a92]">{mins < 60 ? `${mins} min` : `${Math.round(mins / 60)} h`}</span> {j.business ?? j.customer_name}{waiting.length > 1 && <span className="text-white/55"> +{waiting.length - 1}</span>}
+              </a>
+              <p className="hidden min-w-0 flex-1 text-sm text-white/80 md:block"><span className="font-semibold text-[#ff8a92]">Emergency waiting {mins < 60 ? `${mins} min` : `${Math.round(mins / 60)} h`}:</span> {j.business ?? j.customer_name}, {j.issue}
                 {waiting.length > 1 && <a href="/app" className="ml-2 whitespace-nowrap font-semibold underline underline-offset-2">+{waiting.length - 1} more waiting</a>}</p>
-              {tel && <a href={`tel:${tel}`} className="btn btn-sm rounded-full bg-urgent text-white hover:bg-urgent-ink"><PhoneIcon size={14} /> Call</a>}
-              <a href={`/app/jobs/${j.id}`} className="btn btn-sm rounded-full border border-white/20 text-white hover:bg-white/10">Open</a>
-              <form action={acknowledge.bind(null, j.id)}><Submit className="btn btn-sm rounded-full text-white/70 hover:bg-white/10 hover:text-white">I&apos;m on it</Submit></form>
+              {tel && <a href={`tel:${tel}`} aria-label={`Call ${j.business ?? j.customer_name}`} className="btn btn-sm shrink-0 rounded-full bg-urgent px-3 text-white hover:bg-urgent-ink"><PhoneIcon size={14} /><span className="hidden md:inline"> Call</span></a>}
+              <a href={`/app/jobs/${j.id}`} className="btn btn-sm hidden rounded-full border border-white/20 text-white hover:bg-white/10 md:inline-flex">Open</a>
+              <form action={acknowledge.bind(null, j.id)} className="shrink-0"><Submit className="btn btn-sm rounded-full px-2.5 text-white/70 hover:bg-white/10 hover:text-white md:px-3">I&apos;m on it</Submit></form>
             </div>
           );
         })}
