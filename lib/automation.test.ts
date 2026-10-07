@@ -154,3 +154,9 @@ describe("Moving over from the notebook", () => {
     expect(parseNotebook(Array.from({ length: 80 }, (_, i) => `Shop ${i} - fan broken`).join("\n"))).toHaveLength(50);
   });
 });
+
+test("a huge pasted line can't slow the notebook reader down", () => {
+  const t = Date.now();
+  parseNotebook("a" + "-".repeat(100_000) + "b\n" + ", ".repeat(50_000));
+  expect(Date.now() - t).toBeLessThan(200);
+});
