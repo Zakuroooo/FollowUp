@@ -4,6 +4,7 @@ import { currentUser } from "@/lib/db/server";
 import { env } from "@/lib/env";
 import { SettingsForm } from "./SettingsForm";
 import { PageHelp } from "@/components/GettingStarted";
+import { PhoneSetup } from "@/components/PhoneSetup";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Settings" };
@@ -22,6 +23,7 @@ export default async function SettingsPage() {
       <h1 className="display text-[32px] leading-tight md:text-[38px]">Settings</h1>
       <p className="mt-1.5 text-ink-2">Set these once. You rarely need to come back.</p>
       <PageHelp><b>1.</b> Turn on alerts on your phone (and computer). <b>2.</b> Fill in your business name, phone and technicians, then press Save. <b>3.</b> Open <b>Connect phone &amp; email</b> and put the request-form link on your website. That&apos;s it: requests now come to you.</PageHelp>
+      <PhoneSetup demo={profile.is_guest} />
       <SettingsForm
         profile={{ business_name: profile.business_name, business_phone: profile.business_phone ?? "", techs: profile.techs.join(", "), timezone: profile.timezone, digest_email: profile.is_guest ? "" : (user.email ?? ""), digest_enabled: profile.digest_enabled, is_guest: profile.is_guest }}
         formUrl={formUrl}
