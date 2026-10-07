@@ -14,6 +14,7 @@ import { SOURCES, STAGES, type Stage } from "@/lib/types";
 import { triageByRules } from "@/lib/triage";
 import { phoneKey } from "@/lib/phone";
 import { draftFollowUp, parseRequest, triageAI, type Parsed } from "@/lib/ai";
+import { parseNotebook } from "@/lib/notebook";
 
 export type FormState = { error?: string; duplicateOf?: { id: string; name: string }; values?: Record<string, string> };
 
@@ -92,6 +93,37 @@ export async function addJob(_prev: FormState, form: FormData): Promise<FormStat
   await event(job.id, user.id, "created", `Request came in by ${input.source.replace("_", " ")}${urgent ? " · marked urgent" : ""}`);
   refresh();
   redirect(`/app/jobs/${job.id}?added=1`);
+}
+
+export type NotebookState = { ok?: string; error?: string };
+
+/** Paste a page of the notebook: one job per line. Lines whose phone already has an open job are skipped. */
+export async function addNotebook(_prev: NotebookState, form: FormData): Promise<NotebookState> {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const text = String(form.get("notebook") ?? "").slice(0, 30_000);
+  const lines = parseNotebook(text);
+  if (!lines.length) return { error: "Paste at least one line, one job per line." };
+  const supabase = await db();
+  const { data: open } = await supabase.from("jobs").select("phone").not("stage", "in", "(done,lost)");
+  const seen = new Set((open ?? []).map((j) => phoneKey(j.phone)).filter(Boolean));
+  const fresh = lines.filter((l) => {
+    const k = phoneKey(l.phone);
+    if (!k) return true;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  if (!fresh.length) return { error: "Every line is already on your list (same phone number)." };
+  const { data: jobs, error } = await supabase.from("jobs").insert(fresh.map((l) => ({
+    owner_id: user.id, customer_name: l.customer_name, phone: l.phone, source: "call" as const, issue: l.issue,
+    urgent: l.urgent, urgency_source: "rules" as const, urgency_reason: l.urgency_reason,
+  }))).select("id");
+  if (error || !jobs) return { error: "Could not save them. Please try again." };
+  await supabase.from("job_events").insert(jobs.map((j) => ({ job_id: j.id, owner_id: user.id, kind: "created", detail: "Moved over from the notebook" })));
+  refresh();
+  const skipped = lines.length - fresh.length;
+  return { ok: `Added ${jobs.length} ${jobs.length === 1 ? "job" : "jobs"} to your call list${skipped ? ` (${skipped} already there, skipped)` : ""}.` };
 }
 
 const Move = z.object({

@@ -135,3 +135,22 @@ describe("Emails", () => {
     expect(m.text).toContain("Harbor Deli");
   });
 });
+
+import { parseNotebook } from "./notebook";
+
+describe("Moving over from the notebook", () => {
+  test("one job per line, name / problem / phone in any order", () => {
+    const jobs = parseNotebook("Joe's Diner - ice machine making noise - (614) 555-0101\n\n2) Rosa's Cafe: walk-in freezer is down 614-555-0177");
+    expect(jobs).toHaveLength(2);
+    expect(jobs[0]).toMatchObject({ customer_name: "Joe's Diner", phone: "(614) 555-0101", issue: "ice machine making noise", urgent: false });
+    expect(jobs[1]).toMatchObject({ customer_name: "Rosa's Cafe", phone: "614-555-0177", urgent: true });
+  });
+  test("a line with no name still becomes a job", () => {
+    expect(parseNotebook("614-555-0199 cooler making noise")[0]).toMatchObject({ customer_name: "Caller 614-555-0199", issue: "cooler making noise" });
+    expect(parseNotebook("call back about the reach-in")[0].customer_name).toBe("From the notebook");
+  });
+  test("blank lines are skipped and a page is capped at 50 jobs", () => {
+    expect(parseNotebook("\n \n")).toHaveLength(0);
+    expect(parseNotebook(Array.from({ length: 80 }, (_, i) => `Shop ${i} - fan broken`).join("\n"))).toHaveLength(50);
+  });
+});

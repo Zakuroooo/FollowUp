@@ -1,5 +1,6 @@
 import { BackLink } from "@/components/ui";
 import { AddJobForm } from "./AddJobForm";
+import { NotebookImport } from "./NotebookImport";
 
 const NEXT = [
   ["It joins your call list", "New requests show up under “New requests” until someone calls them back."],
@@ -15,7 +16,10 @@ export default function NewJob() {
       <p className="mt-1.5 text-ink-2">A call, a text, a referral or a line from the notebook.</p>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <AddJobForm />
+        <div className="flex min-w-0 flex-col gap-6">
+          <AddJobForm />
+          <NotebookImport />
+        </div>
         <aside className="relative self-start overflow-hidden rounded-2xl bg-navy p-6 text-white">
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-32 -right-24 size-80 rounded-full bg-brand/35 blur-[80px]" />
           <p className="relative text-sm font-semibold">When you save</p>
