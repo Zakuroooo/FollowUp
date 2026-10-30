@@ -1,6 +1,6 @@
 # How this was built with Claude Code (AI workflow)
 
-Gushwork's JD asks for engineers who use AI coding tools well. This is exactly how this project was built.
+This is exactly how this project was built with AI coding tools.
 
 ## 1. Context first, code second
 Before any code, we wrote the context an AI agent needs to make good decisions:

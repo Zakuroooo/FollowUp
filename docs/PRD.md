@@ -29,7 +29,7 @@
 | Denise (owner, on her phone) | Morning call list, fast job entry, one-tap updates |
 | Her husband | Counts: open jobs, $ waiting on a yes |
 | Her customers | A simple way to request service (website form) |
-| Gushwork reviewer | One-click guest demo with realistic data |
+| Reviewer trying the demo | One-click guest demo with realistic data |
 
 ## 5. Version 1 — exactly what she asked for
 | ID | Feature | Her words |
